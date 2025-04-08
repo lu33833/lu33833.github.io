@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lightium Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <div class="container nav-bar">
+    <div class="nav">
       <div class="logo">Lightium</div>
       <nav>
         <a href="#tech">Technology</a>
@@ -19,43 +20,36 @@
   </header>
 
   <section class="hero">
-    <div class="container">
+    <div class="overlay"></div>
+    <div class="hero-content">
       <h1>Bringing Photonics to Life</h1>
-      <p>We engineer ultra-fast photonic systems for future communication and sensing technologies.</p>
+      <p>Engineering ultra-fast photonic systems for next-gen communication and sensing.</p>
       <a href="#contact" class="cta-button">Contact Us</a>
     </div>
   </section>
 
-  <section id="tech" class="section">
-    <div class="container">
-      <h2>Our Technology</h2>
-      <p>We develop cutting-edge photodetectors, terahertz emitters, and integrated photonics platforms.</p>
-    </div>
+  <section id="tech" class="section light">
+    <h2>Our Technology</h2>
+    <p>We develop cutting-edge photodetectors, terahertz emitters, and integrated photonics platforms.</p>
   </section>
 
-  <section id="team" class="section light">
-    <div class="container">
-      <h2>Meet the Team</h2>
-      <p>We are a team of researchers, engineers, and innovators building the future of photonics.</p>
-    </div>
+  <section id="team" class="section dark">
+    <h2>Meet the Team</h2>
+    <p>We are researchers, engineers, and innovators building the future of photonics.</p>
   </section>
 
-  <section id="contact" class="section">
-    <div class="container">
-      <h2>Contact Us</h2>
-      <form action="https://formspree.io/f/your-form-id" method="POST">
-        <input type="text" name="name" placeholder="Your Name" required />
-        <input type="email" name="email" placeholder="Your Email" required />
-        <textarea name="message" placeholder="Your Message" required></textarea>
-        <button type="submit">Send</button>
-      </form>
-    </div>
+  <section id="contact" class="section light">
+    <h2>Contact Us</h2>
+    <form action="https://formspree.io/f/your-form-id" method="POST">
+      <input type="text" name="name" placeholder="Your Name" required />
+      <input type="email" name="email" placeholder="Your Email" required />
+      <textarea name="message" placeholder="Your Message" required></textarea>
+      <button type="submit">Send Message</button>
+    </form>
   </section>
 
   <footer>
-    <div class="container">
-      <p>© 2025 Lightium Lab. All rights reserved.</p>
-    </div>
+    <p>© 2025 Lightium Lab. All rights reserved.</p>
   </footer>
 </body>
 </html>
