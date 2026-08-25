@@ -1,55 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lightium Lab</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0c14">
+  <meta name="description" content="面向光电器件研发的轻量工程计算工具集合。">
+  <meta property="og:title" content="LU LAB · 工程工具集">
+  <meta property="og:description" content="把常用计算变成随手可用的小工具。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://lu33833.github.io/">
+  <meta property="og:image" content="https://lu33833.github.io/assets/og.png">
+  <title>LU LAB · 工程工具集</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <div class="logo">Lightium</div>
-      <nav>
-        <a href="#tech">Technology</a>
-        <a href="#team">Team</a>
-        <a href="#contact">Contact</a>
-      </nav>
-    </div>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="LU LAB 首页">
+      <span class="brand-glyph">LU</span>
+      <span><b>LAB TOOLS</b><small>PHOTONICS · ENGINEERING</small></span>
+    </a>
+    <div class="system-status"><i></i><span>系统在线</span><b>01</b> 个工具</div>
   </header>
 
-  <section class="hero">
-    <div class="overlay"></div>
-    <div class="hero-content">
-      <h1>Bringing Photonics to Life</h1>
-      <p>Engineering ultra-fast photonic systems for next-gen communication and sensing.</p>
-      <a href="#contact" class="cta-button">Contact Us</a>
-    </div>
-  </section>
+  <main>
+    <section class="intro">
+      <div class="intro-copy">
+        <p class="kicker"><span>TOOL SELECT</span> / 工具选择</p>
+        <h1>选择你的<br><em>工程工具</em></h1>
+        <p class="lead">把重复计算从表格和草稿纸里解放出来。轻量、直接、无需安装。</p>
+      </div>
+      <div class="scope" aria-label="工具集信息">
+        <span class="scope-index">00</span>
+        <div><b>LU LAB TOOLBOX</b><small>持续扩充中 · Continuous build</small></div>
+      </div>
+    </section>
 
-  <section id="tech" class="section light">
-    <h2>Our Technology</h2>
-    <p>We develop cutting-edge photodetectors, terahertz emitters, and integrated photonics platforms.</p>
-  </section>
+    <section class="selector" aria-labelledby="selector-title">
+      <div class="section-title">
+        <div><span>AVAILABLE MODULES</span><h2 id="selector-title">可用模块</h2></div>
+        <p>点击卡片进入工具</p>
+      </div>
 
-  <section id="team" class="section dark">
-    <h2>Meet the Team</h2>
-    <p>We are researchers, engineers, and innovators building the future of photonics.</p>
-  </section>
+      <div class="tool-grid">
+        <a class="tool-card active" href="tools/pd-capacitance/">
+          <div class="card-image">
+            <img src="assets/pd-capacitance-card.png" alt="InGaAs 与 InP 双层耗尽区示意图">
+            <div class="scanline"></div>
+            <span class="card-number">01</span>
+            <span class="ready"><i></i> READY</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta"><span>PHOTODETECTOR</span><span>CAPACITANCE</span></div>
+            <h3>PD 结电容计算器</h3>
+            <p>输入 InGaAs、InP 耗尽区厚度与器件直径，实时估算双层耗尽区总电容。</p>
+            <div class="launch"><span>启动工具</span><b aria-hidden="true">↗</b></div>
+          </div>
+        </a>
 
-  <section id="contact" class="section light">
-    <h2>Contact Us</h2>
-    <form action="https://formspree.io/f/your-form-id" method="POST">
-      <input type="text" name="name" placeholder="Your Name" required />
-      <input type="email" name="email" placeholder="Your Email" required />
-      <textarea name="message" placeholder="Your Message" required></textarea>
-      <button type="submit">Send Message</button>
-    </form>
-  </section>
+        <article class="tool-card placeholder" aria-label="下一个小工具，待添加">
+          <div class="placeholder-grid"><span class="plus">+</span><span class="card-number">02</span></div>
+          <div class="card-body">
+            <div class="card-meta"><span>NEXT MODULE</span><span>EMPTY SLOT</span></div>
+            <h3>下一个小工具</h3>
+            <p>新的计算器会出现在这里，保持相同的入口和使用体验。</p>
+            <div class="launch muted"><span>待添加</span><b>—</b></div>
+          </div>
+        </article>
+
+        <article class="tool-card placeholder secondary" aria-label="工具插槽，待添加">
+          <div class="placeholder-grid"><span class="plus">+</span><span class="card-number">03</span></div>
+          <div class="card-body">
+            <div class="card-meta"><span>FUTURE MODULE</span><span>EMPTY SLOT</span></div>
+            <h3>工具插槽</h3>
+            <p>为后续器件设计、带宽预算与参数换算工具预留。</p>
+            <div class="launch muted"><span>待添加</span><b>—</b></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
 
   <footer>
-    <p>© 2025 Lightium Lab. All rights reserved.</p>
+    <span>LU LAB / ENGINEERING UTILITY DECK</span>
+    <span>BUILD 2026.08</span>
   </footer>
 </body>
 </html>

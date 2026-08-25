@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="根据 InGaAs 与 InP 耗尽区厚度及器件直径，实时估算高速光电探测器结电容。">
+  <meta property="og:title" content="PD 结电容计算器">
+  <meta property="og:description" content="InGaAs / InP 双层耗尽区几何结电容实时估算工具">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://lu33833.github.io/tools/pd-capacitance/">
+  <meta property="og:image" content="https://lu33833.github.io/assets/pd-capacitance-card.png">
+  <title>PD 结电容计算器</title>
+  <style>
+    :root{--ink:#101828;--muted:#667085;--line:#dce4ec;--canvas:#f3f7fa;--cyan:#0ea5b7;--indigo:#5966c9}
+    *{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input{font:inherit}
+    .topbar{height:66px;padding:0 clamp(20px,5vw,72px);display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:12px;color:var(--ink);font-size:15px;font-weight:700;text-decoration:none}.mark{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;background:var(--ink);color:#fff;font-family:ui-monospace,monospace}.mark sub{color:#62d6db}
+    button{cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:8px 13px;background:#fff;color:#475467}button:hover{border-color:#98a2b3;color:var(--ink)}
+    .hero{padding:46px clamp(22px,6vw,88px) 38px;display:grid;grid-template-columns:1.15fr .85fr;gap:50px;align-items:end;background:#fff;border-bottom:1px solid var(--line)}
+    .eyebrow{margin:0 0 15px;color:#667085;font-size:10px;font-weight:750;letter-spacing:.16em}.eyebrow:before{content:"";display:inline-block;width:22px;height:2px;margin-right:8px;vertical-align:middle;background:var(--cyan)}
+    h1{margin:0;font-size:clamp(36px,4.4vw,60px);line-height:1.05;letter-spacing:-.055em}.intro{max-width:650px;margin:18px 0 0;color:var(--muted);font-size:14px;line-height:1.8}
+    .formula-card{border-left:3px solid var(--cyan);padding:5px 0 6px 22px}.formula-label{display:block;margin-bottom:13px;color:var(--cyan);font-size:10px;font-weight:750;letter-spacing:.14em}.formula{display:flex;align-items:center;gap:8px;white-space:nowrap;font-family:Georgia,serif;font-size:21px}.fraction{display:inline-flex;flex-direction:column;text-align:center;font-size:.75em}.fraction span:first-child{padding:0 7px 5px;border-bottom:1px solid}.fraction span:last-child{padding-top:5px}.formula-card p{margin:14px 0 0;color:var(--muted);font-size:11px}
+    .workspace{padding:32px clamp(20px,5vw,72px);display:grid;grid-template-columns:minmax(300px,1fr) minmax(300px,1fr);gap:18px}.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:25px;box-shadow:0 4px 16px #10182808}.result{background:#101828;color:#fff;border-color:#101828}
+    .heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}.heading div{display:flex;align-items:center;gap:10px}.heading h2{margin:0;font-size:15px}.step{display:grid;place-items:center;width:28px;height:28px;border-radius:7px;background:#eff3f6;color:#475467;font:700 10px ui-monospace,monospace}.result .step{background:#253144;color:#94e7e9}.heading>span{color:#98a2b3;font-size:10px}.live{color:#7ce1df!important}.live:before{content:"";display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:#45d5d0;box-shadow:0 0 0 4px #45d5d020}
+    .field{margin-bottom:25px}.field-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.field-head label{color:#344054;font-size:12px;font-weight:650}.number{display:flex;align-items:center;height:35px;border:1px solid var(--line);border-radius:8px;background:#f9fbfc;overflow:hidden}.number input{width:72px;height:100%;padding:0 5px 0 10px;border:0;outline:0;background:transparent;text-align:right;font:650 12px ui-monospace,monospace}.number span{padding:0 9px 0 5px;color:#98a2b3;font-size:11px}
+    input[type=range]{--c:var(--cyan);width:100%;height:4px;margin:0;appearance:none;border-radius:10px;background:var(--c)}.purple input[type=range]{--c:var(--indigo)}.slate input[type=range]{--c:#475467}input[type=range]::-webkit-slider-thumb{width:16px;height:16px;appearance:none;border:3px solid #fff;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px var(--c),0 2px 5px #10182833}.limits{display:flex;justify-content:space-between;margin-top:7px;color:#a8b2c1;font:9px ui-monospace,monospace}
+    details{margin-top:3px;padding-top:17px;border-top:1px solid var(--line)}summary{display:flex;color:#344054;font-size:12px;font-weight:650;cursor:pointer;list-style:none}summary:before{content:"+";margin-right:8px;color:var(--cyan)}details[open] summary:before{content:"−"}summary span{margin-left:auto;color:#98a2b3;font-size:10px;font-weight:400}.er-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:15px}.er-grid label{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px}.er-grid input{width:62px;padding:7px;border:1px solid var(--line);border-radius:6px}
+    .primary>span{color:#aeb8c7;font-size:11px}.primary strong{display:flex;align-items:baseline;gap:10px;margin-top:4px;font:600 clamp(48px,7vw,72px) ui-monospace,monospace;letter-spacing:-.06em}.primary small{color:#6ed9db;font-size:17px;letter-spacing:0}.rule{height:1px;margin:18px 0 13px;background:linear-gradient(90deg,#4bd0d2,#293548)}.primary p{margin:0;color:#7e899b;font-size:10px}.values{margin:28px 0 0}.values div{display:flex;justify-content:space-between;gap:15px;padding:13px 0;border-top:1px solid #263246}.values dt{color:#95a0b2;font-size:10px}.values dd{margin:0;color:#e9eef5;font:11px ui-monospace,monospace}.note{margin-top:20px;padding:12px;border:1px solid #2a3a4f;border-radius:8px;background:#162235;color:#8794a7;font-size:9px;line-height:1.75}
+    footer{padding:0 clamp(20px,5vw,72px) 30px;display:flex;justify-content:space-between;color:#98a2b3;font:9px ui-monospace,monospace;letter-spacing:.05em}
+    @media(max-width:760px){.hero,.workspace{grid-template-columns:1fr}.hero{gap:30px;padding-top:36px}.workspace{padding-left:14px;padding-right:14px}.panel{padding:21px}.formula{font-size:17px}footer{flex-direction:column;gap:7px}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="../../" title="返回工具大厅"><span class="mark">C<sub>j</sub></span><span>← 返回工具大厅</span></a><button id="reset" type="button">恢复默认</button></header>
+  <section class="hero">
+    <div><p class="eyebrow">HIGH-SPEED PHOTODIODE</p><h1>双层耗尽区<br>结电容估算</h1><p class="intro">调整 InGaAs 与 InP 的耗尽厚度和台面直径，实时评估高速光电探测器的几何结电容。所有计算都在浏览器本地完成。</p></div>
+    <div class="formula-card"><span class="formula-label">核心模型</span><div class="formula">C<sub>j</sub> = <span class="fraction"><span>ε<sub>0</sub> · A</span><span>t<sub>InGaAs</sub> / ε<sub>r1</sub> + t<sub>InP</sub> / ε<sub>r2</sub></span></span></div><p>两段耗尽区视为同面积平行板电容串联</p></div>
+  </section>
+  <section class="workspace">
+    <div class="panel">
+      <div class="heading"><div><span class="step">01</span><h2>器件参数</h2></div><span>厚度与直径均为物理尺寸</span></div>
+      <div class="field"><div class="field-head"><label for="t1">InGaAs 耗尽区厚度</label><span class="number"><input id="t1n" type="number" min="0.05" max="8" step="0.05"><span>µm</span></span></div><input id="t1" type="range" min="0.05" max="8" step="0.05"><div class="limits"><span>0.05</span><span>8 µm</span></div></div>
+      <div class="field purple"><div class="field-head"><label for="t2">InP 耗尽区厚度</label><span class="number"><input id="t2n" type="number" min="0.05" max="5" step="0.05"><span>µm</span></span></div><input id="t2" type="range" min="0.05" max="5" step="0.05"><div class="limits"><span>0.05</span><span>5 µm</span></div></div>
+      <div class="field slate"><div class="field-head"><label for="diameter">圆形器件直径</label><span class="number"><input id="diametern" type="number" min="2" max="200" step="1"><span>µm</span></span></div><input id="diameter" type="range" min="2" max="200" step="1"><div class="limits"><span>2</span><span>200 µm</span></div></div>
+      <details><summary>材料参数<span>相对介电常数</span></summary><div class="er-grid"><label>InGaAs ε<sub>r</sub><input id="er1" type="number" min="1" max="30" step="0.1"></label><label>InP ε<sub>r</sub><input id="er2" type="number" min="1" max="30" step="0.1"></label></div></details>
+    </div>
+    <aside class="panel result" aria-live="polite">
+      <div class="heading"><div><span class="step">02</span><h2>计算结果</h2></div><span class="live">实时</span></div>
+      <div class="primary"><span>总几何结电容</span><strong><b id="total">—</b><small id="totalUnit">fF</small></strong><div class="rule"></div><p>C<sub>InGaAs</sub> 与 C<sub>InP</sub> 串联后的等效值</p></div>
+      <dl class="values"><div><dt>InGaAs 分层电容</dt><dd id="c1">—</dd></div><div><dt>InP 分层电容</dt><dd id="c2">—</dd></div><div><dt>有效台面面积</dt><dd id="area">—</dd></div><div><dt>电学等效厚度 Σt/ε<sub>r</sub></dt><dd id="te">—</dd></div></dl>
+      <div class="note">结果未计入边缘场、钝化层、焊盘、走线与封装寄生电容。小直径器件中，边缘电容可能不可忽略。</div>
+    </aside>
+  </section>
+  <footer><span>MODEL · PARALLEL PLATE / SERIES DIELECTRIC</span><span>ε<sub>0</sub> = 8.854 × 10<sup>−12</sup> F/m</span></footer>
+  <script>
+    (() => {
+      'use strict';
+      const EPS0 = 8.8541878128e-12;
+      const defaults = {t1:1.8,t2:0.4,diameter:30,er1:13.9,er2:12.5};
+      const $ = id => document.getElementById(id);
+      const clamp = (v,min,max) => Math.min(max,Math.max(min,v));
+      function capText(f){const ff=f*1e15;if(ff>=1000)return[(ff/1000).toFixed(3),'pF'];if(ff>=100)return[ff.toFixed(1),'fF'];if(ff>=10)return[ff.toFixed(2),'fF'];return[ff.toFixed(3),'fF']}
+      function calculate(){
+        const t1=+$('t1').value,t2=+$('t2').value,d=+$('diameter').value,er1=Math.max(1,+$('er1').value||1),er2=Math.max(1,+$('er2').value||1);
+        const area=Math.PI*Math.pow(d*1e-6/2,2),c1=EPS0*er1*area/(t1*1e-6),c2=EPS0*er2*area/(t2*1e-6),total=1/(1/c1+1/c2);
+        const out=capText(total),a=capText(c1),b=capText(c2);$('total').textContent=out[0];$('totalUnit').textContent=out[1];$('c1').textContent=a.join(' ');$('c2').textContent=b.join(' ');$('area').textContent=(area*1e12).toFixed(1)+' µm²';$('te').textContent=(t1/er1+t2/er2).toFixed(4)+' µm';
+      }
+      ['t1','t2','diameter'].forEach(id=>{const range=$(id),number=$(id+'n');range.addEventListener('input',()=>{number.value=range.value;calculate()});number.addEventListener('input',()=>{const value=Number(number.value);if(Number.isFinite(value)){range.value=clamp(value,+range.min,+range.max);calculate()}})});
+      ['er1','er2'].forEach(id=>$(id).addEventListener('input',calculate));
+      function reset(){Object.entries(defaults).forEach(([id,value])=>{$(id).value=value;if($(id+'n'))$(id+'n').value=value});calculate()}
+      $('reset').addEventListener('click',reset);reset();
+    })();
+  </script>
+</body>
+</html>
