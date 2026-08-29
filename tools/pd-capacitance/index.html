@@ -39,8 +39,8 @@
   <section class="workspace">
     <div class="panel">
       <div class="heading"><div><span class="step">01</span><h2>器件参数</h2></div><span>厚度与直径均为物理尺寸</span></div>
-      <div class="field"><div class="field-head"><label for="t1">InGaAs 耗尽区厚度</label><span class="number"><input id="t1n" type="number" min="0.05" max="8" step="0.05"><span>µm</span></span></div><input id="t1" type="range" min="0.05" max="8" step="0.05"><div class="limits"><span>0.05</span><span>8 µm</span></div></div>
-      <div class="field purple"><div class="field-head"><label for="t2">InP 耗尽区厚度</label><span class="number"><input id="t2n" type="number" min="0.05" max="5" step="0.05"><span>µm</span></span></div><input id="t2" type="range" min="0.05" max="5" step="0.05"><div class="limits"><span>0.05</span><span>5 µm</span></div></div>
+      <div class="field"><div class="field-head"><label for="t1">InGaAs 耗尽区厚度</label><span class="number"><input id="t1n" type="number" min="0.05" max="8" step="0.01"><span>µm</span></span></div><input id="t1" type="range" min="0.05" max="8" step="0.01"><div class="limits"><span>0.05</span><span>8 µm</span></div></div>
+      <div class="field purple"><div class="field-head"><label for="t2">InP 耗尽区厚度</label><span class="number"><input id="t2n" type="number" min="0.05" max="5" step="0.01"><span>µm</span></span></div><input id="t2" type="range" min="0.05" max="5" step="0.01"><div class="limits"><span>0.05</span><span>5 µm</span></div></div>
       <div class="field slate"><div class="field-head"><label for="diameter">圆形器件直径</label><span class="number"><input id="diametern" type="number" min="2" max="200" step="1"><span>µm</span></span></div><input id="diameter" type="range" min="2" max="200" step="1"><div class="limits"><span>2</span><span>200 µm</span></div></div>
       <details><summary>材料参数<span>相对介电常数</span></summary><div class="er-grid"><label>InGaAs ε<sub>r</sub><input id="er1" type="number" min="1" max="30" step="0.1"></label><label>InP ε<sub>r</sub><input id="er2" type="number" min="1" max="30" step="0.1"></label></div></details>
     </div>
@@ -60,13 +60,17 @@
       const $ = id => document.getElementById(id);
       const clamp = (v,min,max) => Math.min(max,Math.max(min,v));
       function capText(f){const ff=f*1e15;if(ff>=1000)return[(ff/1000).toFixed(3),'pF'];if(ff>=100)return[ff.toFixed(1),'fF'];if(ff>=10)return[ff.toFixed(2),'fF'];return[ff.toFixed(3),'fF']}
+      function readNumber(id){
+        const range=$(id),number=$(id+'n'),value=Number(number.value);
+        return Number.isFinite(value)&&number.value!==''?clamp(value,+range.min,+range.max):+range.value;
+      }
       function calculate(){
-        const t1=+$('t1').value,t2=+$('t2').value,d=+$('diameter').value,er1=Math.max(1,+$('er1').value||1),er2=Math.max(1,+$('er2').value||1);
+        const t1=readNumber('t1'),t2=readNumber('t2'),d=readNumber('diameter'),er1=clamp(+$('er1').value||1,1,30),er2=clamp(+$('er2').value||1,1,30);
         const area=Math.PI*Math.pow(d*1e-6/2,2),c1=EPS0*er1*area/(t1*1e-6),c2=EPS0*er2*area/(t2*1e-6),total=1/(1/c1+1/c2);
         const out=capText(total),a=capText(c1),b=capText(c2);$('total').textContent=out[0];$('totalUnit').textContent=out[1];$('c1').textContent=a.join(' ');$('c2').textContent=b.join(' ');$('area').textContent=(area*1e12).toFixed(1)+' µm²';$('te').textContent=(t1/er1+t2/er2).toFixed(4)+' µm';
       }
-      ['t1','t2','diameter'].forEach(id=>{const range=$(id),number=$(id+'n');range.addEventListener('input',()=>{number.value=range.value;calculate()});number.addEventListener('input',()=>{const value=Number(number.value);if(Number.isFinite(value)){range.value=clamp(value,+range.min,+range.max);calculate()}})});
-      ['er1','er2'].forEach(id=>$(id).addEventListener('input',calculate));
+      ['t1','t2','diameter'].forEach(id=>{const range=$(id),number=$(id+'n');range.addEventListener('input',()=>{number.value=range.value;calculate()});number.addEventListener('input',()=>{const value=Number(number.value);if(Number.isFinite(value)&&number.value!==''){const bounded=clamp(value,+range.min,+range.max);if(value>+range.max)number.value=bounded;range.value=bounded;calculate()}});number.addEventListener('change',()=>{number.value=readNumber(id);range.value=number.value;calculate()})});
+      ['er1','er2'].forEach(id=>{const input=$(id);input.addEventListener('input',()=>{const value=Number(input.value);if(Number.isFinite(value)&&value>+input.max)input.value=input.max;calculate()});input.addEventListener('change',()=>{input.value=clamp(+input.value||1,+input.min,+input.max);calculate()})});
       function reset(){Object.entries(defaults).forEach(([id,value])=>{$(id).value=value;if($(id+'n'))$(id+'n').value=value});calculate()}
       $('reset').addEventListener('click',reset);reset();
     })();

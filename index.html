@@ -20,7 +20,7 @@
       <span class="brand-glyph">LU</span>
       <span><b>LAB TOOLS</b><small>PHOTONICS · ENGINEERING</small></span>
     </a>
-    <div class="system-status"><i></i><span>系统在线</span><b>01</b> 个工具</div>
+    <div class="system-status"><i></i><span>系统在线</span><b>02</b> 个工具</div>
   </header>
 
   <main>
@@ -45,7 +45,7 @@
       <div class="tool-grid">
         <a class="tool-card active" href="tools/pd-capacitance/">
           <div class="card-image">
-            <img src="assets/pd-capacitance-card.png" alt="InGaAs 与 InP 双层耗尽区示意图">
+            <img src="assets/pd-capacitance-card.jpg" alt="InGaAs 与 InP 双层耗尽区示意图" width="1200" height="675" fetchpriority="high">
             <div class="scanline"></div>
             <span class="card-number">01</span>
             <span class="ready"><i></i> READY</span>
@@ -58,15 +58,21 @@
           </div>
         </a>
 
-        <article class="tool-card placeholder" aria-label="下一个小工具，待添加">
-          <div class="placeholder-grid"><span class="plus">+</span><span class="card-number">02</span></div>
-          <div class="card-body">
-            <div class="card-meta"><span>NEXT MODULE</span><span>EMPTY SLOT</span></div>
-            <h3>下一个小工具</h3>
-            <p>新的计算器会出现在这里，保持相同的入口和使用体验。</p>
-            <div class="launch muted"><span>待添加</span><b>—</b></div>
+        <a class="tool-card active metal-card" href="tools/metal-reflectance/">
+          <div class="metal-card-art" aria-hidden="true">
+            <span class="card-number">02</span>
+            <span class="ready"><i></i> READY</span>
+            <div class="light-wave wave-a"></div><div class="light-wave wave-b"></div>
+            <div class="mini-stack"><i class="mini-au"></i><i class="mini-pt"></i><i class="mini-ti"></i><i class="mini-semi"></i></div>
+            <div class="return-arrow">↙ <small>RETURN</small></div>
           </div>
-        </article>
+          <div class="card-body">
+            <div class="card-meta"><span>PHOTODETECTOR</span><span>OPTICAL TMM</span></div>
+            <h3>顶部金属反射率</h3>
+            <p>自由排列 Ti、Pt、Au 金属层并调整厚度，计算返回 PD、金属吸收与透射的光强比例。</p>
+            <div class="launch"><span>启动工具</span><b aria-hidden="true">↗</b></div>
+          </div>
+        </a>
 
         <article class="tool-card placeholder secondary" aria-label="工具插槽，待添加">
           <div class="placeholder-grid"><span class="plus">+</span><span class="card-number">03</span></div>
