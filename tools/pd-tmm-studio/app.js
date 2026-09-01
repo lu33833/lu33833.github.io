@@ -240,13 +240,14 @@ function runThicknessScan() {
 
 function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),200); }
 function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
-function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'incident-to-exit',layers:layers.map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
+function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'top-to-bottom',layers:[...layers].reverse().map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
 
 async function importJsonFile(file) {
   const payload = JSON.parse(await file.text());
   const layerRows = Array.isArray(payload) ? payload : payload?.layers;
   if (!Array.isArray(layerRows) || !layerRows.length) throw new Error('JSON 中没有有效的 layers 数组');
-  const importedLayers = layerRows.map((source,index) => {
+  const physicalRows = payload?.stackOrder === 'incident-to-exit' ? [...layerRows] : [...layerRows].reverse();
+  const importedLayers = physicalRows.map((source,index) => {
     if (!source || typeof source !== 'object') throw new Error(`第 ${index + 1} 层格式无效`);
     const material = String(source.material || '');
     if (!MATERIALS[material]) throw new Error(`第 ${index + 1} 层的材料“${material || '空'}”不在网页材料库中`);
