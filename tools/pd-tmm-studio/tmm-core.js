@@ -6,6 +6,7 @@ var MATERIALS = {
   "InGaAsP Q1.2": { n: 3.4194, k: 1224e-6, color: "#c9aa5e" },
   "InGaAsP Q1.4": { n: 3.5392, k: 0.099118, color: "#d1b46d" },
   Ti: { n: 3.72, k: 3.58, color: "#777b80" },
+  Pt: { n: 4.436, k: 6.784, color: "#9aa0a8" },
   Au: { n: 0.419, k: 8.42, color: "#d5aa39" },
   Air: { n: 1, k: 0, color: "#dbe8e5" },
   "SiO\u2082": { n: 1.45, k: 0, color: "#a9d5ce" },
