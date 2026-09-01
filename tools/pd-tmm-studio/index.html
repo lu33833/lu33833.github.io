@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071018">
+  <meta name="description" content="自由编辑 PD 外延与金属多层结构，使用传输矩阵法计算吸收、响应度、腔内场强与厚度扫描。">
+  <meta property="og:title" content="PD TMM 外延响应工作台">
+  <meta property="og:description" content="可编辑外延与金属层的光学传输矩阵仿真工具">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://lu33833.github.io/tools/pd-tmm-studio/">
+  <meta property="og:image" content="https://lu33833.github.io/assets/pd-tmm-card.jpg">
+  <title>PD TMM 外延响应工作台</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="../../" title="返回工具大厅"><span class="mark">TMM</span><span>← 返回工具大厅</span></a>
+    <div class="top-actions">
+      <button class="ghost" id="exportJson" type="button">结构 JSON</button>
+      <button class="ghost" id="reset" type="button">恢复默认</button>
+      <button class="primary-btn" id="run" type="button">运行仿真</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow">PHOTODETECTOR · EPITAXY / METAL TMM</p>
+      <h1>PD 外延响应<br><em>传输矩阵工作台</em></h1>
+      <p class="intro">自由搭建外延与金属层，指定真正产生光电流的吸收层。光谱、腔内场和厚度共振全部在浏览器本地计算。</p>
+    </div>
+    <div class="hero-status" aria-label="工具状态"><div><span>ENGINE</span><b class="ok">LOCAL</b></div><div><span>POLARIZATION</span><b>TE + TM</b></div><div><span>MODEL</span><b>n + ik</b></div></div>
+  </section>
+
+  <main class="app-shell">
+    <aside class="panel controls">
+      <div class="panel-head"><div><span class="step">01</span><h2>模型输入</h2></div><span id="layerCount">15 LAYERS</span></div>
+      <div class="control-tabs" role="tablist">
+        <button class="control-tab active" data-control="layers" type="button">层结构</button>
+        <button class="control-tab" data-control="settings" type="button">仿真参数</button>
+      </div>
+
+      <section class="control-view active" id="layersControl">
+        <div class="flow-label"><span>INP SUBSTRATE</span><i></i><span>METAL / AIR</span></div>
+        <div class="layer-list" id="layerList"></div>
+        <button class="add-layer" id="addLayer" type="button">＋ 添加光学层</button>
+      </section>
+
+      <section class="control-view" id="settingsControl">
+        <div class="setting-group"><h3>波长扫描 <span>SPECTRUM</span></h3><div class="field-grid">
+          <label class="field"><span>起始波长</span><div><input id="wlStart" type="number" value="1260" step="1"><i>nm</i></div></label>
+          <label class="field"><span>结束波长</span><div><input id="wlEnd" type="number" value="1360" step="1"><i>nm</i></div></label>
+          <label class="field"><span>采样点数</span><div><input id="wlPoints" type="number" value="101" min="2" max="301" step="1"></div></label>
+          <label class="field"><span>目标波长</span><div><input id="targetWl" type="number" value="1310" step="1"><i>nm</i></div></label>
+        </div></div>
+        <div class="setting-group"><h3>边界介质 <span>BOUNDARY</span></h3><div class="field-grid">
+          <label class="field"><span>入射介质 n</span><div><input id="incidentN" type="number" value="3.22" step="0.01"></div></label>
+          <label class="field"><span>入射介质 k</span><div><input id="incidentK" type="number" value="0" step="0.001"></div></label>
+          <label class="field"><span>出射介质 n</span><div><input id="exitN" type="number" value="1" step="0.01"></div></label>
+          <label class="field"><span>出射介质 k</span><div><input id="exitK" type="number" value="0" step="0.001"></div></label>
+        </div></div>
+        <div class="setting-group"><h3>光束与收集 <span>ILLUMINATION</span></h3>
+          <label class="switch-row"><span><b>高斯角谱积分</b><small>TE / TM 偏振平均</small></span><input id="gaussian" type="checkbox" checked><i></i></label>
+          <div class="field-grid compact">
+            <label class="field"><span>束腰 w₀</span><div><input id="waist" type="number" value="3" min="0.1" step="0.1"><i>µm</i></div></label>
+            <label class="field"><span>角度采样</span><div><input id="angleSamples" type="number" value="18" min="6" max="48" step="1"></div></label>
+            <label class="field"><span>载流子收集效率</span><div><input id="collection" type="number" value="100" min="0" max="100" step="1"><i>%</i></div></label>
+          </div>
+        </div>
+        <p class="notice">材料 n/k 在当前波段内按常数处理。宽光谱精确仿真应使用波长色散数据。</p>
+      </section>
+    </aside>
+
+    <section class="workspace">
+      <div class="summary">
+        <div class="panel metric cyan"><span id="targetMetricLabel">1310 nm 响应度</span><strong id="responsivity">—</strong><small>A/W · EXTERNAL</small></div>
+        <div class="panel metric orange"><span>响应层吸收率</span><strong id="absorption">—</strong><small id="targetLayerName">InGaAs absorber</small></div>
+        <div class="panel metric purple"><span>响应峰值</span><strong id="peakWl">—</strong><small id="peakResponse">—</small></div>
+        <div class="panel metric blue"><span>反射 / 透射</span><strong id="rtMetric">—</strong><small id="parasitic">—</small></div>
+      </div>
+
+      <div class="analysis-grid">
+        <section class="panel schematic-panel">
+          <div class="card-head"><div><span>LIVE CROSS-SECTION</span><h2>动态层结构剖面</h2></div><button id="downloadStructure" type="button">导出 SVG</button></div>
+          <div class="schematic-meta"><span id="stackTotal">TOTAL —</span><span>LOG-SCALED FOR LEGIBILITY</span></div>
+          <div class="schematic-scroll"><div class="schematic" id="schematic"></div></div>
+          <div class="light-entry"><span></span><i>LIGHT FROM SUBSTRATE</i></div>
+        </section>
+
+        <section class="panel analysis-panel">
+          <div class="analysis-tabs" role="tablist">
+            <button class="analysis-tab active" data-view="spectrum" type="button">光谱响应</button>
+            <button class="analysis-tab" data-view="field" type="button">腔内场强</button>
+            <button class="analysis-tab" data-view="scan" type="button">厚度扫描</button>
+            <button class="download" id="downloadCsv" type="button">导出 CSV</button>
+          </div>
+
+          <div class="analysis-view active" id="spectrumView">
+            <div class="chart-heading"><div><b>目标层吸收与响应度</b><span id="spectrumRange">1260 — 1360 nm</span></div><div class="legend"><i class="abs"></i>吸收率 <i class="resp"></i>响应度</div></div>
+            <div class="canvas-wrap"><canvas id="spectrumChart"></canvas></div>
+            <div class="energy-grid">
+              <div><span><i class="r"></i>反射 R</span><b id="energyR">—</b><em><i id="barR"></i></em></div>
+              <div><span><i class="a"></i>目标吸收 Aₜ</span><b id="energyA">—</b><em><i id="barA"></i></em></div>
+              <div><span><i class="t"></i>透射 T</span><b id="energyT">—</b><em><i id="barT"></i></em></div>
+            </div>
+          </div>
+
+          <div class="analysis-view" id="fieldView">
+            <div class="chart-heading"><div><b>腔内归一化 |E|²</b><span id="fieldWavelength">1310 nm · NORMAL INCIDENCE TE</span></div></div>
+            <div class="canvas-wrap tall"><canvas id="fieldChart"></canvas></div>
+            <p class="chart-note">竖线对应层边界；场强按当前结构中的峰值归一化。高损耗金属层中的快速衰减仍由复折射率传播项计算。</p>
+          </div>
+
+          <div class="analysis-view" id="scanView">
+            <div class="scan-layout">
+              <div class="scan-controls">
+                <label><span>X 扫描层</span><select id="scanX"></select></label>
+                <div class="range-row"><label><span>X min</span><div><input id="xMin" type="number" value="20"><i>nm</i></div></label><label><span>X max</span><div><input id="xMax" type="number" value="260"><i>nm</i></div></label></div>
+                <label><span>Y 扫描层</span><select id="scanY"></select></label>
+                <div class="range-row"><label><span>Y min</span><div><input id="yMin" type="number" value="20"><i>nm</i></div></label><label><span>Y max</span><div><input id="yMax" type="number" value="260"><i>nm</i></div></label></div>
+                <label><span>网格分辨率</span><div><input id="scanResolution" type="number" value="25" min="8" max="41"></div></label>
+                <button class="primary-btn scan-btn" id="runScan" type="button">开始双参数扫描</button>
+                <div class="scan-result" id="scanResult"><span>REFERENCE</span><b>等待扫描</b><small>默认复现 spacer X / Y 腔共振图</small></div>
+              </div>
+              <div class="heatmap-wrap"><canvas id="heatmap"></canvas><div class="empty-heatmap" id="emptyHeatmap"><span>2D</span><b>THICKNESS MAP</b><small>设置两层厚度范围后开始扫描</small></div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>OPTICAL TMM · COMPLEX N + IK · TE/TM GAUSSIAN ANGULAR SPECTRUM</span><span>R = η · A · λ / 1.24 · 不包含 RC / TRANSIT-TIME BANDWIDTH</span></footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
