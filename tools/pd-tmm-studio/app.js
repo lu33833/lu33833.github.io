@@ -49,8 +49,9 @@ function materialOptions(selected) {
 }
 
 function renderLayerEditor() {
+  const displayLayers = [...layers].reverse();
   $('layerCount').textContent = `${layers.length} LAYERS`;
-  $('layerList').innerHTML = layers.map((layer, index) => `
+  $('layerList').innerHTML = displayLayers.map((layer, index) => `
     <article class="layer-editor-row ${layer.target ? 'target' : ''}" data-id="${layer.id}" style="--layer-color:${layer.color}">
       <div class="layer-main">
         <input class="layer-name" value="${escapeHtml(layer.name)}" aria-label="第 ${index + 1} 层名称">
@@ -63,7 +64,7 @@ function renderLayerEditor() {
       </div>
       <div class="layer-actions">
         <button class="target-btn ${layer.target ? 'active' : ''}" type="button">${layer.target ? '◎ 响应层' : '○ 设为响应层'}</button>
-        <div class="move-actions"><button class="move-up" type="button" aria-label="上移" ${index === 0 ? 'disabled' : ''}>↑</button><button class="move-down" type="button" aria-label="下移" ${index === layers.length - 1 ? 'disabled' : ''}>↓</button><button class="delete" type="button" aria-label="删除" ${layers.length === 1 ? 'disabled' : ''}>×</button></div>
+        <div class="move-actions"><button class="move-up" type="button" aria-label="上移" ${index === 0 ? 'disabled' : ''}>↑</button><button class="move-down" type="button" aria-label="下移" ${index === displayLayers.length - 1 ? 'disabled' : ''}>↓</button><button class="delete" type="button" aria-label="删除" ${layers.length === 1 ? 'disabled' : ''}>×</button></div>
       </div>
     </article>`).join('');
 
@@ -80,8 +81,8 @@ function renderLayerEditor() {
       renderLayerEditor(); renderSchematic();
     });
     row.querySelector('.target-btn').addEventListener('click', () => { layers.forEach(layer => layer.target = layer.id === id); renderLayerEditor(); renderSchematic(); });
-    row.querySelector('.move-up').addEventListener('click', () => moveLayer(id, -1));
-    row.querySelector('.move-down').addEventListener('click', () => moveLayer(id, 1));
+    row.querySelector('.move-up').addEventListener('click', () => moveLayer(id, 1));
+    row.querySelector('.move-down').addEventListener('click', () => moveLayer(id, -1));
     row.querySelector('.delete').addEventListener('click', () => deleteLayer(id));
   });
 }
