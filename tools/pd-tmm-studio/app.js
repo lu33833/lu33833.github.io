@@ -1,4 +1,4 @@
-import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, incidentOpticalIndex, opticalIndexForLayer, scan2D, simulate } from './tmm-core.js';
+import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, incidentOpticalIndex, opticalIndexForLayer, scan2D, simulate } from './tmm-core.js?v=20260901-3';
 
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -270,7 +270,7 @@ function runThicknessScan() {
   }finally{button.disabled=false;button.textContent='开始双参数扫描'}});
 }
 
-function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),200); }
+function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000); }
 function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_n,target_k,target_alpha_cm-1,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.targetN,p.targetK,p.targetAlphaCm,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
 function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'top-to-bottom',layers:[...layers].reverse().map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
 
