@@ -106,7 +106,14 @@
           </div>
 
           <div class="analysis-view active" id="spectrumView">
-            <div class="chart-heading"><div><b>目标层吸收与响应度</b><span id="spectrumRange">1260 — 1360 nm</span></div><div class="legend"><i class="abs"></i>吸收率 <i class="resp"></i>响应度</div></div>
+            <div class="chart-heading spectrum-heading">
+              <div><b>目标层吸收与响应度</b><span id="spectrumRange">1260 — 1360 nm</span></div>
+              <div class="spectrum-tools">
+                <div class="legend"><i class="abs"></i>吸收率 <i class="resp"></i>响应度</div>
+                <button class="download" id="downloadSpectrumSvg" type="button">导出双轴 SVG</button>
+                <button class="download" id="downloadResponsivitySvg" type="button">仅响应度 SVG</button>
+              </div>
+            </div>
             <div class="canvas-wrap spectrum-wrap"><canvas id="spectrumChart"></canvas><div class="chart-tooltip" id="spectrumTooltip" role="status" aria-live="polite"></div></div>
             <p class="hover-hint">移动鼠标或手指查看任意采样波长的吸收效率与响应度</p>
             <div class="energy-grid">

@@ -18,6 +18,10 @@ let spectrumHoverIndex = null;
 let scanXId = 'spacer-x';
 let scanYId = 'spacer-y';
 
+const SPECTRUM_PAD = {l:66,r:72,t:28,b:52};
+const RESPONSIVITY_AXIS_MAX = 1.2;
+const SPECTRUM_COLORS = {absorption:'#c24f1a',responsivity:'#0068b7',ink:'#111827',grid:'#d9dee3',minor:'#edf0f2'};
+
 function getSettings() {
   return {
     incidentN: Math.max(.01, finite($('incidentN').value, 3.22)),
@@ -181,40 +185,52 @@ function canvasContext(canvas) {
 }
 
 function chartBase(canvas, xMin, xMax, yMin, yMax, options = {}) {
-  const {ctx,width,height} = canvasContext(canvas), pad = {l:48,r:options.right || 22,t:22,b:34};
+  const {ctx,width,height} = canvasContext(canvas), pad = {l:options.left || 48,r:options.right || 22,t:options.top || 22,b:options.bottom || 34};
   const plot = {x:pad.l,y:pad.t,w:width-pad.l-pad.r,h:height-pad.t-pad.b};
   const xMap = x => plot.x + (x-xMin) / Math.max(1e-12,xMax-xMin) * plot.w;
   const yMap = y => plot.y + plot.h - (y-yMin) / Math.max(1e-12,yMax-yMin) * plot.h;
-  ctx.clearRect(0,0,width,height); ctx.font='8px ui-monospace, monospace'; ctx.lineWidth=1;
-  for(let i=0;i<=5;i++){
-    const x=plot.x+plot.w*i/5,y=plot.y+plot.h*i/5;
-    ctx.strokeStyle='rgba(86,132,145,.13)';ctx.beginPath();ctx.moveTo(x,plot.y);ctx.lineTo(x,plot.y+plot.h);ctx.stroke();ctx.beginPath();ctx.moveTo(plot.x,y);ctx.lineTo(plot.x+plot.w,y);ctx.stroke();
-    ctx.fillStyle='#5d7684';ctx.textAlign='center';ctx.fillText(fmt(xMin+(xMax-xMin)*i/5,0),x,plot.y+plot.h+18);
-    ctx.textAlign='right';ctx.fillText(options.percent?`${fmt(yMax-(yMax-yMin)*i/5,0)}%`:fmt(yMax-(yMax-yMin)*i/5,1),plot.x-8,y+3);
+  const xTicks=options.xTicks || 5,yTicks=options.yTicks || 5;
+  ctx.clearRect(0,0,width,height);
+  if(options.paper){ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height)}
+  ctx.font=options.paper?'10px Arial, sans-serif':'8px ui-monospace, monospace';ctx.lineWidth=1;
+  for(let i=0;i<=xTicks;i++){
+    const x=plot.x+plot.w*i/xTicks;
+    ctx.strokeStyle=options.paper?SPECTRUM_COLORS.grid:'rgba(86,132,145,.13)';ctx.beginPath();ctx.moveTo(x,plot.y);ctx.lineTo(x,plot.y+plot.h);ctx.stroke();
+    if(options.paper){ctx.strokeStyle=SPECTRUM_COLORS.ink;ctx.beginPath();ctx.moveTo(x,plot.y+plot.h);ctx.lineTo(x,plot.y+plot.h+5);ctx.stroke()}
+    ctx.fillStyle=options.paper?SPECTRUM_COLORS.ink:'#5d7684';ctx.textAlign='center';ctx.fillText(fmt(xMin+(xMax-xMin)*i/xTicks,options.xDigits || 0),x,plot.y+plot.h+20);
   }
-  ctx.strokeStyle='#2b4655';ctx.strokeRect(plot.x,plot.y,plot.w,plot.h);
+  for(let i=0;i<=yTicks;i++){
+    const y=plot.y+plot.h*i/yTicks;
+    ctx.strokeStyle=options.paper?SPECTRUM_COLORS.grid:'rgba(86,132,145,.13)';ctx.beginPath();ctx.moveTo(plot.x,y);ctx.lineTo(plot.x+plot.w,y);ctx.stroke();
+    if(options.paper){ctx.strokeStyle=SPECTRUM_COLORS.ink;ctx.beginPath();ctx.moveTo(plot.x-5,y);ctx.lineTo(plot.x,y);ctx.stroke()}
+    ctx.fillStyle=options.paper?SPECTRUM_COLORS.ink:'#5d7684';ctx.textAlign='right';ctx.fillText(options.percent?`${fmt(yMax-(yMax-yMin)*i/yTicks,0)}%`:fmt(yMax-(yMax-yMin)*i/yTicks,1),plot.x-9,y+3);
+  }
+  ctx.strokeStyle=options.paper?SPECTRUM_COLORS.ink:'#2b4655';ctx.strokeRect(plot.x,plot.y,plot.w,plot.h);
   return {ctx,width,height,plot,xMap,yMap};
 }
 
 function drawSpectrum() {
   if (!result) return;
   const points=result.spectrum, xMin=points[0].wavelength, xMax=points.at(-1).wavelength;
-  const maxR=Math.max(...points.map(point=>point.responsivity),.1)*1.12;
-  const base=chartBase($('spectrumChart'),xMin,xMax,0,100,{right:48,percent:true}),{ctx,plot,xMap,yMap}=base;
-  const rMap=y=>plot.y+plot.h-y/maxR*plot.h;
-  ctx.beginPath(); points.forEach((point,i)=>{const x=xMap(point.wavelength),y=yMap(point.absorption*100);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.lineTo(xMap(xMax),yMap(0));ctx.lineTo(xMap(xMin),yMap(0));ctx.closePath();
-  const grad=ctx.createLinearGradient(0,plot.y,0,plot.y+plot.h);grad.addColorStop(0,'rgba(239,134,89,.35)');grad.addColorStop(1,'rgba(239,134,89,.02)');ctx.fillStyle=grad;ctx.fill();
-  ctx.beginPath();points.forEach((point,i)=>{const x=xMap(point.wavelength),y=yMap(point.absorption*100);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle='#ef8659';ctx.lineWidth=2;ctx.stroke();
-  ctx.beginPath();points.forEach((point,i)=>{const x=xMap(point.wavelength),y=rMap(point.responsivity);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle='#54e0d2';ctx.lineWidth=2.3;ctx.stroke();
-  const tx=xMap(settings.targetWavelength);ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(184,242,235,.65)';ctx.beginPath();ctx.moveTo(tx,plot.y);ctx.lineTo(tx,plot.y+plot.h);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8fc8c2';ctx.textAlign='center';ctx.fillText(`${fmt(settings.targetWavelength,0)} nm`,tx,plot.y+11);
-  ctx.fillStyle='#5d7684';ctx.textAlign='left';for(let i=0;i<=4;i++)ctx.fillText(fmt(maxR*(4-i)/4,2),plot.x+plot.w+7,plot.y+plot.h*i/4+3);
-  const target=result.target, targetAbsY=yMap(target.absorption*100), targetRespY=rMap(target.responsivity);
-  ctx.fillStyle='#ef8659';ctx.beginPath();ctx.arc(tx,targetAbsY,3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#071018';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.fillStyle='#54e0d2';ctx.beginPath();ctx.arc(tx,targetRespY,3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#071018';ctx.stroke();
+  const base=chartBase($('spectrumChart'),xMin,xMax,0,100,{left:SPECTRUM_PAD.l,right:SPECTRUM_PAD.r,top:SPECTRUM_PAD.t,bottom:SPECTRUM_PAD.b,percent:true,paper:true,xTicks:5,yTicks:5}),{ctx,width,height,plot,xMap,yMap}=base;
+  const rMap=y=>plot.y+plot.h-clamp(y,0,RESPONSIVITY_AXIS_MAX)/RESPONSIVITY_AXIS_MAX*plot.h;
+  ctx.beginPath();points.forEach((point,i)=>{const x=xMap(point.wavelength),y=yMap(point.absorption*100);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle=SPECTRUM_COLORS.absorption;ctx.lineWidth=2.2;ctx.stroke();
+  ctx.beginPath();points.forEach((point,i)=>{const x=xMap(point.wavelength),y=rMap(point.responsivity);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle=SPECTRUM_COLORS.responsivity;ctx.lineWidth=2.4;ctx.stroke();
+  ctx.font='10px Arial, sans-serif';ctx.fillStyle=SPECTRUM_COLORS.ink;ctx.textAlign='left';
+  for(let i=0;i<=6;i++){const value=RESPONSIVITY_AXIS_MAX*(6-i)/6,y=plot.y+plot.h*i/6;ctx.strokeStyle=SPECTRUM_COLORS.ink;ctx.beginPath();ctx.moveTo(plot.x+plot.w,y);ctx.lineTo(plot.x+plot.w+5,y);ctx.stroke();ctx.fillText(value.toFixed(1),plot.x+plot.w+9,y+3)}
+  ctx.font='11px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Wavelength (nm)',plot.x+plot.w/2,height-10);
+  ctx.save();ctx.translate(15,plot.y+plot.h/2);ctx.rotate(-Math.PI/2);ctx.fillText('Absorption efficiency (%)',0,0);ctx.restore();
+  ctx.save();ctx.translate(width-13,plot.y+plot.h/2);ctx.rotate(Math.PI/2);ctx.fillText('Responsivity (A/W)',0,0);ctx.restore();
+  const targetInRange=settings.targetWavelength>=xMin&&settings.targetWavelength<=xMax,tx=xMap(settings.targetWavelength);
+  if(targetInRange){
+    ctx.setLineDash([5,5]);ctx.strokeStyle='#6b7280';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(tx,plot.y);ctx.lineTo(tx,plot.y+plot.h);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#374151';ctx.font='9px Arial, sans-serif';ctx.textAlign=tx>plot.x+plot.w*.78?'right':'left';ctx.fillText(`${fmt(settings.targetWavelength,0)} nm`,tx+(ctx.textAlign==='right'?-5:5),plot.y+12);
+    const target=result.target,targetAbsY=yMap(target.absorption*100),targetRespY=rMap(target.responsivity);
+    [[SPECTRUM_COLORS.absorption,targetAbsY],[SPECTRUM_COLORS.responsivity,targetRespY]].forEach(([color,y])=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(tx,y,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke()});
+  }
   if(spectrumHoverIndex!==null&&points[spectrumHoverIndex]){
     const point=points[spectrumHoverIndex],hx=xMap(point.wavelength),ha=yMap(point.absorption*100),hr=rMap(point.responsivity);
-    ctx.strokeStyle='rgba(224,246,244,.72)';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(hx,plot.y);ctx.lineTo(hx,plot.y+plot.h);ctx.stroke();ctx.setLineDash([]);
-    [['#ef8659',ha],['#54e0d2',hr]].forEach(([color,y])=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(hx,y,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#071018';ctx.lineWidth=1.5;ctx.stroke()});
+    ctx.strokeStyle='#4b5563';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(hx,plot.y);ctx.lineTo(hx,plot.y+plot.h);ctx.stroke();ctx.setLineDash([]);
+    [[SPECTRUM_COLORS.absorption,ha],[SPECTRUM_COLORS.responsivity,hr]].forEach(([color,y])=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(hx,y,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke()});
   }
 }
 
@@ -258,6 +274,39 @@ function download(name, content, type) { const url=URL.createObjectURL(new Blob(
 function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_n,target_k,target_alpha_cm-1,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.targetN,p.targetK,p.targetAlphaCm,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
 function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'top-to-bottom',layers:[...layers].reverse().map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
 
+function svgPolyline(points,xMap,yMap,valueOf){return points.map((point,index)=>`${index?'L':'M'} ${xMap(point.wavelength).toFixed(2)} ${yMap(valueOf(point)).toFixed(2)}`).join(' ')}
+
+function exportSpectrumSvg(responsivityOnly=false){
+  if(!result)return;
+  const points=result.spectrum,xMin=points[0].wavelength,xMax=points.at(-1).wavelength,width=1200,height=760;
+  const margin={left:responsivityOnly?112:112,right:responsivityOnly?60:112,top:126,bottom:94},plot={x:112,y:126,w:width-112-(responsivityOnly?60:112),h:height-126-94};
+  const xMap=value=>plot.x+(value-xMin)/Math.max(1e-12,xMax-xMin)*plot.w;
+  const absorptionMap=value=>plot.y+plot.h-clamp(value,0,100)/100*plot.h;
+  const responsivityMap=value=>plot.y+plot.h-clamp(value,0,RESPONSIVITY_AXIS_MAX)/RESPONSIVITY_AXIS_MAX*plot.h;
+  const targetInRange=settings.targetWavelength>=xMin&&settings.targetWavelength<=xMax;
+  const xTicks=Array.from({length:6},(_,index)=>xMin+(xMax-xMin)*index/5);
+  let svg=`<rect width="${width}" height="${height}" fill="#ffffff"/>`;
+  svg+=`<text x="${plot.x}" y="48" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700">${responsivityOnly?'Photodetector responsivity spectrum':'Target-layer absorption and responsivity'}</text>`;
+  svg+=`<text x="${plot.x}" y="79" fill="#4b5563" font-family="Arial,Helvetica,sans-serif" font-size="16">${escapeHtml(simulatedLayers.find(layer=>layer.target)?.name||'Target layer')} · ${fmt(xMin,0)}–${fmt(xMax,0)} nm · fixed scientific axes</text>`;
+  xTicks.forEach((value,index)=>{const x=xMap(value);if(index<5){const minor=xMap((value+xTicks[index+1])/2);svg+=`<line x1="${minor}" y1="${plot.y}" x2="${minor}" y2="${plot.y+plot.h}" stroke="#edf0f2" stroke-width="1"/>`}svg+=`<line x1="${x}" y1="${plot.y}" x2="${x}" y2="${plot.y+plot.h}" stroke="#d9dee3" stroke-width="1"/><line x1="${x}" y1="${plot.y+plot.h}" x2="${x}" y2="${plot.y+plot.h+8}" stroke="#111827" stroke-width="2"/><text x="${x}" y="${plot.y+plot.h+31}" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">${fmt(value,Math.abs(value-Math.round(value))>.001?1:0)}</text>`});
+  if(responsivityOnly){
+    for(let index=0;index<=6;index++){const value=index*.2,y=responsivityMap(value);svg+=`<line x1="${plot.x}" y1="${y}" x2="${plot.x+plot.w}" y2="${y}" stroke="#d9dee3" stroke-width="1"/><line x1="${plot.x-8}" y1="${y}" x2="${plot.x}" y2="${y}" stroke="#111827" stroke-width="2"/><text x="${plot.x-15}" y="${y+5}" text-anchor="end" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">${value.toFixed(1)}</text>`}
+  }else{
+    for(let index=0;index<=5;index++){const value=index*20,y=absorptionMap(value);svg+=`<line x1="${plot.x}" y1="${y}" x2="${plot.x+plot.w}" y2="${y}" stroke="#d9dee3" stroke-width="1"/><line x1="${plot.x-8}" y1="${y}" x2="${plot.x}" y2="${y}" stroke="#111827" stroke-width="2"/><text x="${plot.x-15}" y="${y+5}" text-anchor="end" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">${value}%</text>`}
+    for(let index=0;index<=6;index++){const value=index*.2,y=responsivityMap(value);svg+=`<line x1="${plot.x+plot.w}" y1="${y}" x2="${plot.x+plot.w+8}" y2="${y}" stroke="#111827" stroke-width="2"/><text x="${plot.x+plot.w+15}" y="${y+5}" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">${value.toFixed(1)}</text>`}
+  }
+  svg+=`<rect x="${plot.x}" y="${plot.y}" width="${plot.w}" height="${plot.h}" fill="none" stroke="#111827" stroke-width="2"/>`;
+  svg+=`<text x="${plot.x+plot.w/2}" y="${height-28}" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="18">Wavelength (nm)</text>`;
+  svg+=`<text x="34" y="${plot.y+plot.h/2}" transform="rotate(-90 34 ${plot.y+plot.h/2})" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="18">${responsivityOnly?'Responsivity (A/W)':'Absorption efficiency (%)'}</text>`;
+  if(!responsivityOnly)svg+=`<text x="${width-24}" y="${plot.y+plot.h/2}" transform="rotate(90 ${width-24} ${plot.y+plot.h/2})" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="18">Responsivity (A/W)</text>`;
+  if(!responsivityOnly)svg+=`<path d="${svgPolyline(points,xMap,absorptionMap,point=>point.absorption*100)}" fill="none" stroke="${SPECTRUM_COLORS.absorption}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  svg+=`<path d="${svgPolyline(points,xMap,responsivityMap,point=>point.responsivity)}" fill="none" stroke="${SPECTRUM_COLORS.responsivity}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(!responsivityOnly)svg+=`<line x1="${plot.x+18}" y1="103" x2="${plot.x+56}" y2="103" stroke="${SPECTRUM_COLORS.absorption}" stroke-width="4"/><text x="${plot.x+66}" y="109" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">Absorption</text><line x1="${plot.x+190}" y1="103" x2="${plot.x+228}" y2="103" stroke="${SPECTRUM_COLORS.responsivity}" stroke-width="4"/><text x="${plot.x+238}" y="109" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">Responsivity</text>`;
+  if(targetInRange){const tx=xMap(settings.targetWavelength),target=result.target,annotation=responsivityOnly?`${fmt(settings.targetWavelength,0)} nm · ${fmt(target.responsivity,4)} A/W`:`${fmt(settings.targetWavelength,0)} nm · A ${fmt(target.absorption*100,2)}% · R ${fmt(target.responsivity,4)} A/W`;svg+=`<line x1="${tx}" y1="${plot.y}" x2="${tx}" y2="${plot.y+plot.h}" stroke="#6b7280" stroke-width="2" stroke-dasharray="8 7"/>`;if(!responsivityOnly)svg+=`<circle cx="${tx}" cy="${absorptionMap(target.absorption*100)}" r="6" fill="${SPECTRUM_COLORS.absorption}" stroke="#fff" stroke-width="2"/>`;svg+=`<circle cx="${tx}" cy="${responsivityMap(target.responsivity)}" r="6" fill="${SPECTRUM_COLORS.responsivity}" stroke="#fff" stroke-width="2"/><rect x="${clamp(tx-150,plot.x+8,plot.x+plot.w-308)}" y="${plot.y+15}" width="300" height="36" rx="3" fill="#fff" stroke="#6b7280"/><text x="${clamp(tx,plot.x+158,plot.x+plot.w-158)}" y="${plot.y+39}" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700">${annotation}</text>`}
+  const name=responsivityOnly?'pd-tmm-responsivity.svg':'pd-tmm-spectrum-dual-axis.svg';
+  download(name,`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${svg}</svg>`,'image/svg+xml');
+}
+
 async function importJsonFile(file) {
   const payload = JSON.parse(await file.text());
   const layerRows = Array.isArray(payload) ? payload : payload?.layers;
@@ -281,12 +330,20 @@ async function importJsonFile(file) {
   $('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>已载入新的层结构</small>'; runSimulation();
 }
 
+function printLayerColor(layer){const palette={Au:'#ffd21a',Pt:'#b3b3b3',Ti:'#8f8f8f',InGaAs:'#d79a27',InP:'#4d72d8','InGaAsP Q1.03':'#27ada8','InGaAsP Q1.2':'#43d4ca','InGaAsP Q1.4':'#4bc7c2',Air:'#f3f4f6','SiO₂':'#cfe9ef',SiN:'#80b9c8',Custom:'#c4c7cb'};return palette[layer.material]||layer.color||'#c4c7cb'}
+
 function exportStructureSvg(){
-  const s=getSettings(),ordered=[...layers].reverse(),heights=ordered.map(layer=>layerHeight(layer.thickness)),width=700,stackX=120,stackW=460,top=110,totalH=heights.reduce((a,b)=>a+b,0)+76,height=top+totalH+125;let y=top+38;
-  const esc=value=>escapeHtml(value);let body=`<rect x="0" y="0" width="${width}" height="${height}" fill="#071018"/><text x="42" y="50" fill="#eef7f8" font-family="Arial,sans-serif" font-size="28" font-weight="700">PD TMM structure schematic</text><text x="42" y="77" fill="#7f98a8" font-family="monospace" font-size="12">${layers.length} layers · ${fmt(layers.reduce((a,l)=>a+l.thickness,0),1)} nm · ${fmt(s.targetWavelength,0)} nm</text><rect x="${stackX}" y="${top}" width="${stackW}" height="38" rx="7" fill="#3f4c54" stroke="#7a8b92"/><text x="${width/2}" y="${top+24}" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">EXIT MEDIUM · n=${fmt(s.exitN,2)}</text>`;
-  ordered.forEach((layer,index)=>{const h=heights[index];body+=`<rect x="${stackX}" y="${y}" width="${stackW}" height="${h}" fill="${layer.color}" stroke="${layer.target?'#ffbb97':'#d6f3f0'}" stroke-width="${layer.target?4:1}"/><text x="${stackX+stackW/2-18}" y="${y+h/2+4}" text-anchor="middle" fill="#fff" stroke="#071018" stroke-width="3" paint-order="stroke" font-family="Arial" font-size="13" font-weight="700">${esc(layer.name)}</text><text x="${stackX+stackW+16}" y="${y+h/2+4}" fill="#c8d7dc" font-family="monospace" font-size="12">${fmt(layer.thickness,layer.thickness%1?1:0)} nm</text>`;y+=h});
-  body+=`<rect x="${stackX}" y="${y}" width="${stackW}" height="38" rx="7" fill="#3f4c54" stroke="#7a8b92"/><text x="${width/2}" y="${y+24}" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">INCIDENT MEDIUM · n=${fmt(s.incidentN,2)}${s.idealAr?' · IDEAL BACKSIDE AR':''}</text><path d="M350 ${y+102}V${y+50}M350 ${y+50}l-8 12M350 ${y+50}l8 12" stroke="#54e0d2" stroke-width="4" fill="none" stroke-linecap="round"/><text x="350" y="${y+122}" text-anchor="middle" fill="#7f98a8" font-family="monospace" font-size="11">LIGHT FROM SUBSTRATE</text>`;
-  download('pd-tmm-structure.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body}</svg>`,'image/svg+xml');
+  const s=getSettings(),ordered=[...layers].reverse(),heights=ordered.map(layer=>clamp(Math.round(layerHeight(layer.thickness)*.92),46,84));
+  const width=920,stackX=260,stackW=420,top=126,totalH=heights.reduce((sum,value)=>sum+value,0),height=top+totalH+175;
+  let y=top,body=`<rect width="${width}" height="${height}" fill="#ffffff"/><text x="34" y="45" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700">PD epitaxial / metal structure</text><text x="34" y="77" fill="#333333" font-family="Arial,Helvetica,sans-serif" font-size="16">${layers.length} layers · total ${fmt(layers.reduce((sum,layer)=>sum+layer.thickness,0),1)} nm · reference wavelength ${fmt(s.targetWavelength,0)} nm</text><text x="${stackX+stackW/2}" y="${top-16}" text-anchor="middle" fill="#333333" font-family="Arial,Helvetica,sans-serif" font-size="14">Exit medium · n = ${fmt(s.exitN,2)}</text>`;
+  ordered.forEach((layer,index)=>{
+    const h=heights[index],center=y+h/2,fontSize=layer.name.length>28?12:layer.name.length>21?13:15,opticalIndex=opticalIndexForLayer(layer,s,s.targetWavelength);
+    body+=`<rect x="${stackX}" y="${y}" width="${stackW}" height="${h}" fill="${printLayerColor(layer)}" stroke="#111111" stroke-width="${layer.target?3:2}"/><text x="${stackX+stackW/2}" y="${center+5}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="700">${escapeHtml(layer.name)}</text><text x="${stackX+stackW+22}" y="${center+5}" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="16">${fmt(layer.thickness,layer.thickness%1?1:0)} nm</text>`;
+    if(layer.id===scanXId||layer.id===scanYId){const label=layer.id===scanXId?'X':'Y',period=s.targetWavelength/(2*Math.max(.01,opticalIndex.re)),boxY=center-28;body+=`<path d="M ${stackX-14} ${y+5} H ${stackX-38} V ${y+h-5} H ${stackX-14}" fill="none" stroke="#111111" stroke-width="2"/><rect x="42" y="${boxY}" width="156" height="56" rx="5" fill="#ffffff" stroke="#111111" stroke-width="2"/><text x="120" y="${boxY+21}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700">${label} period</text><text x="120" y="${boxY+43}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="15">≈ ${fmt(period,1)} nm</text><line x1="198" y1="${center}" x2="${stackX-38}" y2="${center}" stroke="#111111" stroke-width="2"/>`}
+    y+=h;
+  });
+  body+=`<text x="${stackX+stackW/2}" y="${y+26}" text-anchor="middle" fill="#333333" font-family="Arial,Helvetica,sans-serif" font-size="14">Incident medium · n = ${fmt(s.incidentN,2)}${s.idealAr?' · ideal backside AR':''}</text><path d="M ${stackX+stackW/2} ${y+103} V ${y+50} M ${stackX+stackW/2} ${y+50} l -9 14 M ${stackX+stackW/2} ${y+50} l 9 14" fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round"/><text x="${stackX+stackW/2}" y="${y+132}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="16">LIGHT FROM SUBSTRATE</text>`;
+  download('pd-tmm-structure.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" shape-rendering="geometricPrecision">${body}</svg>`,'image/svg+xml');
 }
 
 function resetAll(){layers=cloneLayers();settings=cloneSettings();scanXId='spacer-x';scanYId='spacer-y';scanResult=null;populateSettings(settings);renderLayerEditor();refreshScanOptions();$('emptyHeatmap').classList.remove('hidden');$('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>默认复现 spacer X / Y 腔共振图</small>';runSimulation()}
@@ -297,7 +354,7 @@ $('addLayer').addEventListener('click',()=>{const preset=MATERIALS.Custom;layers
 $('scanX').addEventListener('change',event=>{scanXId=event.target.value;renderSchematic()});$('scanY').addEventListener('change',event=>{scanYId=event.target.value;renderSchematic()});
 $('spectrumChart').addEventListener('pointermove',event=>{
   if(!result||activeView!=='spectrum')return;
-  const canvas=$('spectrumChart'),rect=canvas.getBoundingClientRect(),left=48,right=48,x=event.clientX-rect.left,y=event.clientY-rect.top;
+  const canvas=$('spectrumChart'),rect=canvas.getBoundingClientRect(),left=SPECTRUM_PAD.l,right=SPECTRUM_PAD.r,x=event.clientX-rect.left,y=event.clientY-rect.top;
   if(x<left||x>rect.width-right){spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum();return}
   const ratio=clamp((x-left)/Math.max(1,rect.width-left-right),0,1),index=clamp(Math.round(ratio*(result.spectrum.length-1)),0,result.spectrum.length-1),point=result.spectrum[index];
   spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>响应层 n / k <strong>${fmt(point.targetN,4)} / ${fmt(point.targetK,4)}</strong></span><span>响应层 α <strong>${fmt(point.targetAlphaCm,0)} cm⁻¹</strong></span><span>${settings.idealAr?'内部返回反射':'总反射率'} <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
@@ -306,7 +363,7 @@ $('spectrumChart').addEventListener('pointermove',event=>{
 $('spectrumChart').addEventListener('pointerleave',()=>{spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum()});
 $('importJson').addEventListener('click',()=>$('importJsonFile').click());
 $('importJsonFile').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;const button=$('importJson');try{button.disabled=true;button.textContent='导入中…';await importJsonFile(file);button.textContent='导入成功';setTimeout(()=>button.textContent='导入 JSON',1200)}catch(error){button.textContent='导入失败';window.alert(`无法导入结构：${error.message}`);setTimeout(()=>button.textContent='导入 JSON',1600)}finally{button.disabled=false;event.target.value=''}});
-$('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
+$('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('downloadSpectrumSvg').addEventListener('click',()=>exportSpectrumSvg(false));$('downloadResponsivitySvg').addEventListener('click',()=>exportSpectrumSvg(true));$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
 ['targetWl','incidentN','exitN'].forEach(id=>$(id).addEventListener('input',renderSchematic));
 $('wavelengthDependent').addEventListener('change',()=>{renderSchematic();showPendingModelStatus()});
 $('conservativeInGaAs').addEventListener('change',()=>{renderSchematic();showPendingModelStatus()});
