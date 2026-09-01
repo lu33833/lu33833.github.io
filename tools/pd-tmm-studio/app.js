@@ -240,7 +240,29 @@ function runThicknessScan() {
 
 function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),200); }
 function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
-function exportJson(){download('pd-tmm-structure.json',JSON.stringify({layers,settings:getSettings()},null,2),'application/json')}
+function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'incident-to-exit',layers:layers.map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
+
+async function importJsonFile(file) {
+  const payload = JSON.parse(await file.text());
+  const layerRows = Array.isArray(payload) ? payload : payload?.layers;
+  if (!Array.isArray(layerRows) || !layerRows.length) throw new Error('JSON 中没有有效的 layers 数组');
+  const importedLayers = layerRows.map((source,index) => {
+    if (!source || typeof source !== 'object') throw new Error(`第 ${index + 1} 层格式无效`);
+    const material = String(source.material || '');
+    if (!MATERIALS[material]) throw new Error(`第 ${index + 1} 层的材料“${material || '空'}”不在网页材料库中`);
+    const preset = MATERIALS[material], thickness = Number(source.thickness);
+    if (!Number.isFinite(thickness) || thickness <= 0) throw new Error(`第 ${index + 1} 层厚度无效`);
+    return {id:`import-${Date.now()}-${index}`,name:String(source.name || `Layer ${index + 1}`),material,thickness,n:preset.n,k:preset.k,target:false,color:preset.color};
+  });
+  let targetIndex = importedLayers.findIndex(layer => /absorber|absorption|active|吸收|有源/i.test(layer.name));
+  if (targetIndex < 0) targetIndex = importedLayers.findIndex(layer => layer.material === 'InGaAs');
+  importedLayers[Math.max(0,targetIndex)].target = true;
+  layers = importedLayers;
+  settings = getSettings();
+  scanXId = layers[0].id; scanYId = layers[Math.min(1,layers.length-1)].id;
+  scanResult = null; renderLayerEditor(); refreshScanOptions(false); renderSchematic(); $('emptyHeatmap').classList.remove('hidden');
+  $('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>已载入新的层结构</small>'; runSimulation();
+}
 
 function exportStructureSvg(){
   const s=getSettings(),ordered=[...layers].reverse(),heights=ordered.map(layer=>layerHeight(layer.thickness)),width=700,stackX=120,stackW=460,top=110,totalH=heights.reduce((a,b)=>a+b,0)+76,height=top+totalH+125;let y=top+38;
@@ -265,6 +287,8 @@ $('spectrumChart').addEventListener('pointermove',event=>{
   const tw=tooltip.offsetWidth||178,th=tooltip.offsetHeight||110;tooltip.style.left=`${clamp(x+14,8,rect.width-tw-8)}px`;tooltip.style.top=`${clamp(y-th/2,8,rect.height-th-8)}px`;drawSpectrum();
 });
 $('spectrumChart').addEventListener('pointerleave',()=>{spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum()});
+$('importJson').addEventListener('click',()=>$('importJsonFile').click());
+$('importJsonFile').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;const button=$('importJson');try{button.disabled=true;button.textContent='导入中…';await importJsonFile(file);button.textContent='导入成功';setTimeout(()=>button.textContent='导入 JSON',1200)}catch(error){button.textContent='导入失败';window.alert(`无法导入结构：${error.message}`);setTimeout(()=>button.textContent='导入 JSON',1600)}finally{button.disabled=false;event.target.value=''}});
 $('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
 ['targetWl','incidentN','exitN'].forEach(id=>$(id).addEventListener('input',renderSchematic));
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawActive,120)});
