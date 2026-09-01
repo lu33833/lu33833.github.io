@@ -58,7 +58,8 @@
         </div></div>
         <div class="setting-group"><h3>材料色散 <span>DISPERSION</span></h3>
           <label class="switch-row dispersion-switch"><span><b>使用波长依赖 n(λ), k(λ)</b><small>InGaAs 响应层 + InP 层与默认 InP 入射边界</small></span><input id="wavelengthDependent" type="checkbox"><i></i></label>
-          <div class="model-source"><span>300 K · O-BAND READY</span><b>InGaAs · Adachi complex dielectric model</b><b>InP · Pettit–Turner Sellmeier model</b><small>仅覆盖内置 InP 与被指定为响应层的 InGaAs；其他材料仍使用层列表中的常数 n/k。</small><a href="https://doi.org/10.1063/1.343580" target="_blank" rel="noreferrer">查看 InGaAs 原始文献 ↗</a><a href="https://doi.org/10.1063/1.1714410" target="_blank" rel="noreferrer">查看 InP 原始文献 ↗</a></div>
+          <label class="switch-row conservative-switch"><span><b>保守估计（低 k）</b><small>开启后切换到原 Adachi 模型；仅在波长相关模式生效</small></span><input id="conservativeInGaAs" type="checkbox"><i></i></label>
+          <div class="model-source"><span>O-BAND · 1310 CALIBRATED</span><b>InGaAs 默认 · 1260–1360 nm 校准表</b><b>InGaAs 保守 · Adachi complex dielectric model</b><b>InP · Pettit–Turner Sellmeier model</b><small>表格范围内线性插值，范围外锁定端点；仅作用于被指定为响应层的 InGaAs。</small><a href="https://doi.org/10.1063/1.343580" target="_blank" rel="noreferrer">查看保守模型文献 ↗</a><a href="https://doi.org/10.1063/1.1714410" target="_blank" rel="noreferrer">查看 InP 原始文献 ↗</a></div>
         </div>
         <div class="setting-group"><h3>边界介质 <span>BOUNDARY</span></h3><div class="field-grid">
           <label class="field"><span>入射介质 n</span><div><input id="incidentN" type="number" value="3.22" step="0.01"></div></label>

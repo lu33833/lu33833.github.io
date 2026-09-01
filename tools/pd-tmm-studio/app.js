@@ -32,6 +32,7 @@ function getSettings() {
     angularSamples: clamp(Math.round(finite($('angleSamples').value, 18)), 6, 48),
     gaussian: $('gaussian').checked,
     wavelengthDependent: $('wavelengthDependent').checked,
+    conservativeInGaAs: $('conservativeInGaAs').checked,
     idealAr: $('idealAr').checked,
     collectionEfficiency: clamp(finite($('collection').value, 100) / 100, 0, 1),
   };
@@ -44,6 +45,7 @@ function populateSettings(next) {
   $('wlPoints').value = next.points; $('targetWl').value = next.targetWavelength;
   $('waist').value = next.waistUm; $('angleSamples').value = next.angularSamples;
   $('gaussian').checked = next.gaussian; $('wavelengthDependent').checked = next.wavelengthDependent;
+  $('conservativeInGaAs').checked = next.conservativeInGaAs;
   $('idealAr').checked = next.idealAr;
   $('collection').value = next.collectionEfficiency * 100;
 }
@@ -149,7 +151,8 @@ function runSimulation() {
 
 function updateResults() {
   const target = result.target, peak = result.peak;
-  $('modelStatus').textContent = `${settings.wavelengthDependent ? 'DISPERSIVE n(λ) + ik(λ)' : 'CONSTANT n + ik'}${settings.idealAr ? ' · IDEAL AR' : ''}`;
+  const dispersionStatus = settings.wavelengthDependent ? (settings.conservativeInGaAs ? 'ADACHI LOW-k' : 'O-BAND TABLE n(λ)+ik(λ)') : 'CONSTANT n + ik';
+  $('modelStatus').textContent = `${dispersionStatus}${settings.idealAr ? ' · IDEAL AR' : ''}`;
   $('modelStatus').classList.toggle('dispersive', settings.wavelengthDependent);
   $('targetMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 响应度`;
   $('absorptionMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 吸收效率`;
@@ -235,6 +238,11 @@ function drawHeatmap() {
 
 function drawActive(){if(activeView==='spectrum')drawSpectrum();else if(activeView==='field')drawField();else drawHeatmap()}
 
+function showPendingModelStatus() {
+  const dispersion = !$('wavelengthDependent').checked ? 'CONSTANT n + ik' : $('conservativeInGaAs').checked ? 'ADACHI LOW-k' : 'O-BAND TABLE';
+  $('modelStatus').textContent = `${dispersion}${$('idealAr').checked ? ' · IDEAL AR' : ''} · RUN TO APPLY`;
+}
+
 function runThicknessScan() {
   if (scanXId === scanYId) { $('scanResult').innerHTML='<span>INPUT ERROR</span><b>请选择不同层</b><small>X 与 Y 不能是同一层。</small>'; return; }
   settings=getSettings();const button=$('runScan');button.disabled=true;button.textContent='扫描中…';
@@ -300,8 +308,9 @@ $('importJson').addEventListener('click',()=>$('importJsonFile').click());
 $('importJsonFile').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;const button=$('importJson');try{button.disabled=true;button.textContent='导入中…';await importJsonFile(file);button.textContent='导入成功';setTimeout(()=>button.textContent='导入 JSON',1200)}catch(error){button.textContent='导入失败';window.alert(`无法导入结构：${error.message}`);setTimeout(()=>button.textContent='导入 JSON',1600)}finally{button.disabled=false;event.target.value=''}});
 $('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
 ['targetWl','incidentN','exitN'].forEach(id=>$(id).addEventListener('input',renderSchematic));
-$('wavelengthDependent').addEventListener('change',()=>{renderSchematic();$('modelStatus').textContent=$('wavelengthDependent').checked?'DISPERSIVE · RUN TO APPLY':'CONSTANT n + ik'});
-$('idealAr').addEventListener('change',()=>{$('modelStatus').textContent=$('idealAr').checked?'IDEAL AR · RUN TO APPLY':$('wavelengthDependent').checked?'DISPERSIVE · RUN TO APPLY':'CONSTANT n + ik'});
+$('wavelengthDependent').addEventListener('change',()=>{renderSchematic();showPendingModelStatus()});
+$('conservativeInGaAs').addEventListener('change',()=>{renderSchematic();showPendingModelStatus()});
+$('idealAr').addEventListener('change',showPendingModelStatus);
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawActive,120)});
 
 populateSettings(settings);renderLayerEditor();refreshScanOptions(false);renderSchematic();runSimulation();

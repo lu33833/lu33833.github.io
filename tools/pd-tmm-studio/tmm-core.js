@@ -26,6 +26,7 @@ var DEFAULT_SETTINGS = {
   angularSamples: 18,
   gaussian: true,
   wavelengthDependent: false,
+  conservativeInGaAs: false,
   idealAr: false,
   collectionEfficiency: 1
 };
@@ -110,6 +111,38 @@ function inGaAsAdachiIndex(wavelengthNm) {
   ));
 }
 
+const INGAAS_O_BAND_TABLE = [
+  [1260, 3.667, 0.1221],
+  [1270, 3.663, 0.1217],
+  [1280, 3.660, 0.1214],
+  [1290, 3.657, 0.1210],
+  [1300, 3.653, 0.1205],
+  [1310, 3.650, 0.1200],
+  [1320, 3.647, 0.1194],
+  [1330, 3.643, 0.1189],
+  [1340, 3.640, 0.1182],
+  [1350, 3.637, 0.1175],
+  [1360, 3.633, 0.1167]
+];
+
+function inGaAsOBandIndex(wavelengthNm) {
+  const first = INGAAS_O_BAND_TABLE[0];
+  const last = INGAAS_O_BAND_TABLE[INGAAS_O_BAND_TABLE.length - 1];
+  const wavelength = clamp(wavelengthNm, first[0], last[0]);
+  for (let index = 1; index < INGAAS_O_BAND_TABLE.length; index += 1) {
+    const upper = INGAAS_O_BAND_TABLE[index];
+    if (wavelength <= upper[0]) {
+      const lower = INGAAS_O_BAND_TABLE[index - 1];
+      const fraction = (wavelength - lower[0]) / (upper[0] - lower[0]);
+      return C(
+        lower[1] + (upper[1] - lower[1]) * fraction,
+        lower[2] + (upper[2] - lower[2]) * fraction
+      );
+    }
+  }
+  return C(last[1], last[2]);
+}
+
 // Pettit & Turner, J. Appl. Phys. 36, 2081 (1965); wavelength is in micrometres.
 function inPIndex(wavelengthNm) {
   const wavelengthUm = wavelengthNm / 1e3;
@@ -122,7 +155,9 @@ function inPIndex(wavelengthNm) {
 function opticalIndexForLayer(layer, settings, wavelength) {
   if (!settings.wavelengthDependent) return C(layer.n, layer.k);
   if (layer.material === "InP") return inPIndex(wavelength);
-  if (layer.material === "InGaAs" && layer.target) return inGaAsAdachiIndex(wavelength);
+  if (layer.material === "InGaAs" && layer.target) {
+    return settings.conservativeInGaAs ? inGaAsAdachiIndex(wavelength) : inGaAsOBandIndex(wavelength);
+  }
   return C(layer.n, layer.k);
 }
 
