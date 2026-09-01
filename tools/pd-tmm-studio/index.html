@@ -11,7 +11,7 @@
   <meta property="og:url" content="https://lu33833.github.io/tools/pd-tmm-studio/">
   <meta property="og:image" content="https://lu33833.github.io/assets/pd-tmm-card.jpg">
   <title>PD TMM 外延响应工作台</title>
-  <link rel="stylesheet" href="style.css?v=20260901-3">
+  <link rel="stylesheet" href="style.css?v=20260901-4">
 </head>
 <body>
   <div class="grid-bg" aria-hidden="true"></div>
@@ -130,6 +130,20 @@
           </div>
 
           <div class="analysis-view" id="scanView">
+            <section class="single-scan-panel">
+              <div class="scan-section-title"><div><b>单厚度参数扫描</b><span>THICKNESS — RESPONSIVITY</span></div><button class="download" id="downloadSingleScanSvg" type="button" disabled>导出曲线 SVG</button></div>
+              <div class="single-scan-layout">
+                <div class="scan-controls single-scan-controls">
+                  <label><span>扫描层</span><select id="singleScanLayer"></select></label>
+                  <div class="range-row"><label><span>厚度 min</span><div><input id="singleMin" type="number" value="20"><i>nm</i></div></label><label><span>厚度 max</span><div><input id="singleMax" type="number" value="260"><i>nm</i></div></label></div>
+                  <label><span>采样点数</span><div><input id="singlePoints" type="number" value="81" min="11" max="301"></div></label>
+                  <button class="primary-btn scan-btn" id="runSingleScan" type="button">开始单参数扫描</button>
+                  <div class="scan-result" id="singleScanResult"><span>1D SWEEP</span><b>等待扫描</b><small>计算目标波长处的响应度随厚度变化</small></div>
+                </div>
+                <div class="single-chart-wrap"><canvas id="singleScanChart"></canvas><div class="empty-single-scan" id="emptySingleScan"><span>1D</span><b>THICKNESS SWEEP</b><small>选择一层并设置厚度范围</small></div></div>
+              </div>
+            </section>
+            <div class="scan-section-title"><div><b>双参数厚度热图</b><span>TWO-PARAMETER MAP</span></div></div>
             <div class="scan-layout">
               <div class="scan-controls">
                 <label><span>X 扫描层</span><select id="scanX"></select></label>
@@ -149,6 +163,6 @@
   </main>
 
   <footer><span>OPTICAL TMM · COMPLEX N + IK · TE/TM GAUSSIAN ANGULAR SPECTRUM</span><span>R = η · A · λ / 1.24 · 不包含 RC / TRANSIT-TIME BANDWIDTH</span></footer>
-  <script type="module" src="app.js?v=20260901-3"></script>
+  <script type="module" src="app.js?v=20260901-4"></script>
 </body>
 </html>

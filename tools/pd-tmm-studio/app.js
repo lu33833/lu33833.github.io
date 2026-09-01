@@ -1,4 +1,4 @@
-import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, incidentOpticalIndex, opticalIndexForLayer, scan2D, simulate } from './tmm-core.js?v=20260901-3';
+import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, incidentOpticalIndex, opticalIndexForLayer, responseAtWavelength, scan2D, simulate } from './tmm-core.js?v=20260901-4';
 
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -13,10 +13,12 @@ let settings = cloneSettings();
 let simulatedLayers = cloneLayers();
 let result = null;
 let scanResult = null;
+let singleScanResult = null;
 let activeView = 'spectrum';
 let spectrumHoverIndex = null;
 let scanXId = 'spacer-x';
 let scanYId = 'spacer-y';
+let singleScanId = 'spacer-x';
 
 const SPECTRUM_PAD = {l:66,r:72,t:28,b:52};
 const RESPONSIVITY_AXIS_MAX = 1.2;
@@ -111,6 +113,7 @@ function deleteLayer(id) {
   if (removed?.target && layers.length) layers[0].target = true;
   if (!layers.some(layer => layer.id === scanXId)) scanXId = layers[0].id;
   if (!layers.some(layer => layer.id === scanYId)) scanYId = layers[Math.min(1, layers.length - 1)].id;
+  if (!layers.some(layer => layer.id === singleScanId)) singleScanId = layers[0].id;
   renderLayerEditor(); renderSchematic(); refreshScanOptions();
 }
 
@@ -135,8 +138,8 @@ function renderSchematic() {
 
 function refreshScanOptions(reset = true) {
   const make = selected => layers.map(layer => `<option value="${layer.id}" ${layer.id === selected ? 'selected' : ''}>${escapeHtml(layer.name)}</option>`).join('');
-  $('scanX').innerHTML = make(scanXId); $('scanY').innerHTML = make(scanYId);
-  if (reset) scanResult = null;
+  $('scanX').innerHTML = make(scanXId); $('scanY').innerHTML = make(scanYId); $('singleScanLayer').innerHTML = make(singleScanId);
+  if (reset) { scanResult = null; singleScanResult = null; }
   renderSchematic();
 }
 
@@ -252,7 +255,16 @@ function drawHeatmap() {
   const ox=plot.x+(scanResult.optimum.x-scanResult.xValues[0])/(scanResult.xValues.at(-1)-scanResult.xValues[0])*plot.w,oy=plot.y+plot.h-(scanResult.optimum.y-scanResult.yValues[0])/(scanResult.yValues.at(-1)-scanResult.yValues[0])*plot.h;ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(ox-7,oy);ctx.lineTo(ox+7,oy);ctx.moveTo(ox,oy-7);ctx.lineTo(ox,oy+7);ctx.stroke();
 }
 
-function drawActive(){if(activeView==='spectrum')drawSpectrum();else if(activeView==='field')drawField();else drawHeatmap()}
+function drawSingleScan() {
+  if (!singleScanResult) return;
+  const points=singleScanResult.points,xMin=points[0].thickness,xMax=points.at(-1).thickness;
+  const {ctx,width,height,plot,xMap,yMap}=chartBase($('singleScanChart'),xMin,xMax,0,RESPONSIVITY_AXIS_MAX,{left:62,right:22,top:24,bottom:48,paper:true,xTicks:5,yTicks:6,xDigits:Math.abs(xMax-xMin)<20?1:0});
+  ctx.beginPath();points.forEach((point,index)=>{const x=xMap(point.thickness),y=yMap(point.responsivity);index?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle=SPECTRUM_COLORS.responsivity;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();
+  const optimum=singleScanResult.optimum,ox=xMap(optimum.thickness),oy=yMap(optimum.responsivity);ctx.fillStyle='#0068b7';ctx.beginPath();ctx.arc(ox,oy,4.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle=SPECTRUM_COLORS.ink;ctx.font='11px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Thickness (nm)',plot.x+plot.w/2,height-10);ctx.save();ctx.translate(15,plot.y+plot.h/2);ctx.rotate(-Math.PI/2);ctx.fillText('Responsivity (A/W)',0,0);ctx.restore();
+}
+
+function drawActive(){if(activeView==='spectrum')drawSpectrum();else if(activeView==='field')drawField();else{drawSingleScan();drawHeatmap()}}
 
 function showPendingModelStatus() {
   const dispersion = !$('wavelengthDependent').checked ? 'CONSTANT n + ik' : $('conservativeInGaAs').checked ? 'ADACHI LOW-k' : 'O-BAND TABLE';
@@ -268,6 +280,20 @@ function runThicknessScan() {
     $('scanResult').innerHTML=`<span>GRID OPTIMUM</span><b>${fmt(scanResult.optimum.responsivity,4)} A/W</b><small>${escapeHtml(xName)} · ${fmt(scanResult.optimum.x,1)} nm<br>${escapeHtml(yName)} · ${fmt(scanResult.optimum.y,1)} nm</small>`;
     $('emptyHeatmap').classList.add('hidden');drawHeatmap();renderSchematic();
   }finally{button.disabled=false;button.textContent='开始双参数扫描'}});
+}
+
+function runSingleThicknessScan() {
+  settings=getSettings();const button=$('runSingleScan');button.disabled=true;button.textContent='扫描中…';
+  requestAnimationFrame(()=>{try{
+    let min=Math.max(.01,finite($('singleMin').value,20)),max=Math.max(.01,finite($('singleMax').value,260));if(max<min)[min,max]=[max,min];
+    const count=clamp(Math.round(finite($('singlePoints').value,81)),11,301),fastSettings={...settings,angularSamples:Math.min(settings.angularSamples,18)};
+    const thicknesses=Array.from({length:count},(_,index)=>min+(max-min)*index/(count-1));
+    const points=thicknesses.map(thickness=>{const candidate=layers.map(layer=>layer.id===singleScanId?{...layer,thickness}:{...layer}),response=responseAtWavelength(candidate,fastSettings,settings.targetWavelength);return{thickness,responsivity:settings.targetWavelength/1e3*clamp(response.absorption,0,1)*settings.collectionEfficiency/1.24}});
+    const optimum=points.reduce((best,point)=>point.responsivity>best.responsivity?point:best,points[0]),layerName=layers.find(layer=>layer.id===singleScanId)?.name||'Layer';
+    singleScanResult={points,optimum,layerName,wavelength:settings.targetWavelength};
+    $('singleScanResult').innerHTML=`<span>SWEEP OPTIMUM</span><b>${fmt(optimum.responsivity,4)} A/W</b><small>${escapeHtml(layerName)} · ${fmt(optimum.thickness,2)} nm<br>${fmt(settings.targetWavelength,0)} nm</small>`;
+    $('emptySingleScan').classList.add('hidden');$('downloadSingleScanSvg').disabled=false;drawSingleScan();
+  }finally{button.disabled=false;button.textContent='开始单参数扫描'}});
 }
 
 function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000); }
@@ -307,6 +333,17 @@ function exportSpectrumSvg(responsivityOnly=false){
   download(name,`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${svg}</svg>`,'image/svg+xml');
 }
 
+function exportSingleScanSvg(){
+  if(!singleScanResult)return;const {points,optimum,layerName,wavelength}=singleScanResult,width=1100,height=700,plot={x:105,y:112,w:925,h:500},xMin=points[0].thickness,xMax=points.at(-1).thickness;
+  const xMap=value=>plot.x+(value-xMin)/Math.max(1e-12,xMax-xMin)*plot.w,yMap=value=>plot.y+plot.h-clamp(value,0,RESPONSIVITY_AXIS_MAX)/RESPONSIVITY_AXIS_MAX*plot.h;
+  let svg=`<rect width="${width}" height="${height}" fill="#ffffff"/><text x="${plot.x}" y="46" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="29" font-weight="700">Single-layer thickness sweep</text><text x="${plot.x}" y="78" fill="#4b5563" font-family="Arial,Helvetica,sans-serif" font-size="16">${escapeHtml(layerName)} · ${fmt(wavelength,0)} nm · responsivity</text>`;
+  for(let i=0;i<=5;i++){const value=xMin+(xMax-xMin)*i/5,x=xMap(value);svg+=`<line x1="${x}" y1="${plot.y}" x2="${x}" y2="${plot.y+plot.h}" stroke="#d9dee3"/><line x1="${x}" y1="${plot.y+plot.h}" x2="${x}" y2="${plot.y+plot.h+8}" stroke="#111827" stroke-width="2"/><text x="${x}" y="${plot.y+plot.h+31}" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">${fmt(value,Math.abs(xMax-xMin)<20?1:0)}</text>`}
+  for(let i=0;i<=6;i++){const value=i*.2,y=yMap(value);svg+=`<line x1="${plot.x}" y1="${y}" x2="${plot.x+plot.w}" y2="${y}" stroke="#d9dee3"/><line x1="${plot.x-8}" y1="${y}" x2="${plot.x}" y2="${y}" stroke="#111827" stroke-width="2"/><text x="${plot.x-15}" y="${y+5}" text-anchor="end" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="16">${value.toFixed(1)}</text>`}
+  const path=points.map((point,index)=>`${index?'L':'M'} ${xMap(point.thickness).toFixed(2)} ${yMap(point.responsivity).toFixed(2)}`).join(' '),ox=xMap(optimum.thickness),oy=yMap(optimum.responsivity);
+  svg+=`<rect x="${plot.x}" y="${plot.y}" width="${plot.w}" height="${plot.h}" fill="none" stroke="#111827" stroke-width="2"/><path d="${path}" fill="none" stroke="${SPECTRUM_COLORS.responsivity}" stroke-width="4" stroke-linejoin="round"/><circle cx="${ox}" cy="${oy}" r="7" fill="${SPECTRUM_COLORS.responsivity}" stroke="#fff" stroke-width="2"/><text x="${plot.x+plot.w/2}" y="${height-25}" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="18">Thickness (nm)</text><text x="30" y="${plot.y+plot.h/2}" transform="rotate(-90 30 ${plot.y+plot.h/2})" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="18">Responsivity (A/W)</text><text x="${clamp(ox,plot.x+135,plot.x+plot.w-135)}" y="${Math.max(plot.y+25,oy-18)}" text-anchor="middle" fill="#111827" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700">Peak ${fmt(optimum.thickness,2)} nm · ${fmt(optimum.responsivity,4)} A/W</text>`;
+  download('pd-tmm-single-thickness-scan.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${svg}</svg>`,'image/svg+xml');
+}
+
 async function importJsonFile(file) {
   const payload = JSON.parse(await file.text());
   const layerRows = Array.isArray(payload) ? payload : payload?.layers;
@@ -325,8 +362,8 @@ async function importJsonFile(file) {
   importedLayers[Math.max(0,targetIndex)].target = true;
   layers = importedLayers;
   settings = getSettings();
-  scanXId = layers[0].id; scanYId = layers[Math.min(1,layers.length-1)].id;
-  scanResult = null; renderLayerEditor(); refreshScanOptions(false); renderSchematic(); $('emptyHeatmap').classList.remove('hidden');
+  scanXId = layers[0].id; scanYId = layers[Math.min(1,layers.length-1)].id; singleScanId=layers[Math.max(0,targetIndex)].id;
+  scanResult = null; singleScanResult=null; renderLayerEditor(); refreshScanOptions(false); renderSchematic(); $('emptyHeatmap').classList.remove('hidden');$('emptySingleScan').classList.remove('hidden');$('downloadSingleScanSvg').disabled=true;
   $('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>已载入新的层结构</small>'; runSimulation();
 }
 
@@ -346,12 +383,13 @@ function exportStructureSvg(){
   download('pd-tmm-structure.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" shape-rendering="geometricPrecision">${body}</svg>`,'image/svg+xml');
 }
 
-function resetAll(){layers=cloneLayers();settings=cloneSettings();scanXId='spacer-x';scanYId='spacer-y';scanResult=null;populateSettings(settings);renderLayerEditor();refreshScanOptions();$('emptyHeatmap').classList.remove('hidden');$('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>默认复现 spacer X / Y 腔共振图</small>';runSimulation()}
+function resetAll(){layers=cloneLayers();settings=cloneSettings();scanXId='spacer-x';scanYId='spacer-y';singleScanId='spacer-x';scanResult=null;singleScanResult=null;populateSettings(settings);renderLayerEditor();refreshScanOptions();$('emptyHeatmap').classList.remove('hidden');$('emptySingleScan').classList.remove('hidden');$('downloadSingleScanSvg').disabled=true;$('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>默认复现 spacer X / Y 腔共振图</small>';$('singleScanResult').innerHTML='<span>1D SWEEP</span><b>等待扫描</b><small>计算目标波长处的响应度随厚度变化</small>';runSimulation()}
 
 document.querySelectorAll('.control-tab').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.control-tab').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('.control-view').forEach(view=>view.classList.toggle('active',view.id===`${button.dataset.control}Control`))}));
 document.querySelectorAll('.analysis-tab').forEach(button=>button.addEventListener('click',()=>{activeView=button.dataset.view;spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');document.querySelectorAll('.analysis-tab').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('.analysis-view').forEach(view=>view.classList.toggle('active',view.id===`${activeView}View`));requestAnimationFrame(drawActive)}));
 $('addLayer').addEventListener('click',()=>{const preset=MATERIALS.Custom;layers.push({id:`layer-${Date.now()}`,name:'Custom layer',material:'Custom',thickness:100,n:preset.n,k:preset.k,target:false,color:preset.color});renderLayerEditor();refreshScanOptions(false);renderSchematic()});
 $('scanX').addEventListener('change',event=>{scanXId=event.target.value;renderSchematic()});$('scanY').addEventListener('change',event=>{scanYId=event.target.value;renderSchematic()});
+$('singleScanLayer').addEventListener('change',event=>{singleScanId=event.target.value});
 $('spectrumChart').addEventListener('pointermove',event=>{
   if(!result||activeView!=='spectrum')return;
   const canvas=$('spectrumChart'),rect=canvas.getBoundingClientRect(),left=SPECTRUM_PAD.l,right=SPECTRUM_PAD.r,x=event.clientX-rect.left,y=event.clientY-rect.top;
@@ -363,7 +401,7 @@ $('spectrumChart').addEventListener('pointermove',event=>{
 $('spectrumChart').addEventListener('pointerleave',()=>{spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum()});
 $('importJson').addEventListener('click',()=>$('importJsonFile').click());
 $('importJsonFile').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;const button=$('importJson');try{button.disabled=true;button.textContent='导入中…';await importJsonFile(file);button.textContent='导入成功';setTimeout(()=>button.textContent='导入 JSON',1200)}catch(error){button.textContent='导入失败';window.alert(`无法导入结构：${error.message}`);setTimeout(()=>button.textContent='导入 JSON',1600)}finally{button.disabled=false;event.target.value=''}});
-$('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('downloadSpectrumSvg').addEventListener('click',()=>exportSpectrumSvg(false));$('downloadResponsivitySvg').addEventListener('click',()=>exportSpectrumSvg(true));$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
+$('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('runSingleScan').addEventListener('click',runSingleThicknessScan);$('downloadSingleScanSvg').addEventListener('click',exportSingleScanSvg);$('downloadCsv').addEventListener('click',exportCsv);$('downloadSpectrumSvg').addEventListener('click',()=>exportSpectrumSvg(false));$('downloadResponsivitySvg').addEventListener('click',()=>exportSpectrumSvg(true));$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
 ['targetWl','incidentN','exitN'].forEach(id=>$(id).addEventListener('input',renderSchematic));
 $('wavelengthDependent').addEventListener('change',()=>{renderSchematic();showPendingModelStatus()});
 $('conservativeInGaAs').addEventListener('change',()=>{renderSchematic();showPendingModelStatus()});
