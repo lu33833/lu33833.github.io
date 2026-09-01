@@ -24,6 +24,7 @@ var DEFAULT_SETTINGS = {
   waistUm: 3,
   angularSamples: 18,
   gaussian: true,
+  wavelengthDependent: false,
   collectionEfficiency: 1
 };
 var DEFAULT_LAYERS = [
@@ -60,6 +61,7 @@ var exp = (z) => {
 };
 var sin = (z) => C(Math.sin(z.re) * Math.cosh(z.im), Math.cos(z.re) * Math.sinh(z.im));
 var cos = (z) => C(Math.cos(z.re) * Math.cosh(z.im), -Math.sin(z.re) * Math.sinh(z.im));
+var log = (z) => C(Math.log(Math.hypot(z.re, z.im)), Math.atan2(z.im, z.re));
 var sqrt = (z) => {
   const radius = Math.hypot(z.re, z.im);
   const re = Math.sqrt(Math.max(0, (radius + z.re) / 2));
@@ -68,8 +70,68 @@ var sqrt = (z) => {
 };
 var cexpI = (z, sign = 1) => exp(C(-sign * z.im, sign * z.re));
 var clamp = (x, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, x));
+
+// Adachi, J. Appl. Phys. 66, 6030 (1989), In(1-x)Ga(x)As with x = 0.48.
+// The full complex dielectric function is evaluated at every wavelength.
+function inGaAsAdachiIndex(wavelengthNm) {
+  const energy = 1239.841984 / wavelengthNm;
+  const E0 = 0.75, delta0 = 0.29, E1 = 2.57, delta1 = 0.26, E2 = 4.41, Eg = 1.20;
+  const A = 1.20, B1 = 3.84, B2 = 1.48, B11 = 7.57, B21 = 2.96;
+  const gamma1 = 0.14, oscillatorC = 2.90, gamma2 = 0.225, D = 20.7, epsilonInf = 2.8;
+  const H = (x) => x > 0 ? 1 : x < 0 ? 0 : 0.5;
+  const x0 = energy / E0, xSo = energy / (E0 + delta0);
+  const f0 = x0 ** -2 * (2 - Math.sqrt(1 + x0) - Math.sqrt(Math.max(0, (1 - x0) * H(1 - x0))));
+  const fSo = xSo ** -2 * (2 - Math.sqrt(1 + xSo) - Math.sqrt(Math.max(0, (1 - xSo) * H(1 - xSo))));
+  const epsilonA1 = A * E0 ** -1.5 * (f0 + 0.5 * (E0 / (E0 + delta0)) ** 1.5 * fSo);
+  const epsilonA2 = A / energy ** 2 * (
+    Math.sqrt(Math.max(0, (energy - E0) * H(x0 - 1))) +
+    0.5 * Math.sqrt(Math.max(0, (energy - E0 - delta0) * H(xSo - 1)))
+  );
+  const x1 = energy / E1, x1So = energy / (E1 + delta1);
+  let epsilonB2 = Math.PI * x1 ** -2 * (B1 - B11 * Math.sqrt(Math.max(0, (E1 - energy) * H(1 - x1)))) +
+    Math.PI * x1So ** -2 * (B2 - B21 * Math.sqrt(Math.max(0, (E1 + delta1 - energy) * H(1 - x1So))));
+  epsilonB2 *= H(epsilonB2);
+  const z1 = C(energy / E1, gamma1 / E1);
+  const z1So = C(energy / (E1 + delta1), gamma1 / (E1 + delta1));
+  const epsilonB = add(
+    mul(scale(div(C(1), mul(z1, z1)), -B1), log(sub(C(1), mul(z1, z1)))),
+    mul(scale(div(C(1), mul(z1So, z1So)), -B2), log(sub(C(1), mul(z1So, z1So))))
+  );
+  const x2 = energy / E2;
+  const oscillatorDenominator = (1 - x2 ** 2) ** 2 + (x2 * gamma2) ** 2;
+  const epsilonC1 = oscillatorC * (1 - x2 ** 2) / oscillatorDenominator;
+  const epsilonC2 = oscillatorC * x2 * gamma2 / oscillatorDenominator;
+  const epsilonD2 = D / energy ** 2 * (energy - Eg) ** 2 * H(1 - Eg / energy) * H(1 - energy / E1);
+  return sqrt(C(
+    epsilonInf + epsilonA1 + epsilonB.re + epsilonC1,
+    epsilonA2 + epsilonB2 + epsilonC2 + epsilonD2
+  ));
+}
+
+// Pettit & Turner, J. Appl. Phys. 36, 2081 (1965); wavelength is in micrometres.
+function inPIndex(wavelengthNm) {
+  const wavelengthUm = wavelengthNm / 1e3;
+  const wavelength2 = wavelengthUm * wavelengthUm;
+  const n2 = 1 + 6.255 + 2.316 * wavelength2 / (wavelength2 - 0.6263 ** 2) +
+    2.765 * wavelength2 / (wavelength2 - 32.935 ** 2);
+  return C(Math.sqrt(Math.max(0, n2)), 0);
+}
+
+function opticalIndexForLayer(layer, settings, wavelength) {
+  if (!settings.wavelengthDependent) return C(layer.n, layer.k);
+  if (layer.material === "InP") return inPIndex(wavelength);
+  if (layer.material === "InGaAs" && layer.target) return inGaAsAdachiIndex(wavelength);
+  return C(layer.n, layer.k);
+}
+
+function incidentOpticalIndex(settings, wavelength) {
+  const usesDefaultInPBoundary = settings.wavelengthDependent &&
+    Math.abs(settings.incidentN - MATERIALS.InP.n) < 1e-9 && Math.abs(settings.incidentK) < 1e-12;
+  return usesDefaultInPBoundary ? inPIndex(wavelength) : C(settings.incidentN, settings.incidentK);
+}
+
 function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes = false) {
-  const n0 = C(settings.incidentN, settings.incidentK);
+  const n0 = incidentOpticalIndex(settings, wavelength);
   const ns = C(settings.exitN, settings.exitK);
   const theta0 = thetaDeg * Math.PI / 180;
   const sin0 = Math.sin(theta0);
@@ -83,7 +145,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
   const etas = [];
   const deltas = [];
   for (const layer of layers) {
-    const nj = C(layer.n, layer.k);
+    const nj = opticalIndexForLayer(layer, settings, wavelength);
     const sinJ = div(scale(n0, sin0), nj);
     let cosJ = sqrt(sub(C(1), mul(sinJ, sinJ)));
     if (cosJ.re < 0) cosJ = neg(cosJ);
@@ -156,7 +218,7 @@ function responseAtWavelength(layers, settings, wavelength) {
       transmittance: 0.5 * (te.transmittance + tm.transmittance)
     };
   }
-  const thetaWidth = wavelength / (Math.PI * settings.incidentN * settings.waistUm * 1e3);
+  const thetaWidth = wavelength / (Math.PI * incidentOpticalIndex(settings, wavelength).re * settings.waistUm * 1e3);
   const thetaMax = 4 * thetaWidth;
   const samples = Math.max(6, Math.round(settings.angularSamples));
   let absorption = 0, reflectance = 0, transmittance = 0, denominator = 0;
@@ -176,6 +238,8 @@ function responseAtWavelength(layers, settings, wavelength) {
 }
 function spectralPoint(layers, settings, wavelength) {
   const response = responseAtWavelength(layers, settings, wavelength);
+  const targetLayer = layers.find((layer) => layer.target) || layers[0];
+  const targetIndex = opticalIndexForLayer(targetLayer, settings, wavelength);
   const absorption = clamp(response.absorption);
   const reflectance = clamp(response.reflectance);
   const transmittance = clamp(response.transmittance);
@@ -184,6 +248,9 @@ function spectralPoint(layers, settings, wavelength) {
     wavelength,
     absorption,
     responsivity,
+    targetN: targetIndex.re,
+    targetK: targetIndex.im,
+    targetAlphaCm: 4 * Math.PI * targetIndex.im / (wavelength / 1e7),
     reflectance,
     transmittance,
     parasitic: clamp(1 - reflectance - transmittance - absorption)
@@ -208,7 +275,7 @@ function fieldProfile(layers, settings, wavelength) {
   let offset = 0;
   layers.forEach((layer, index) => {
     const samples = Math.max(4, Math.min(24, Math.round(layer.thickness / 25)));
-    const nj = C(layer.n, layer.k);
+    const nj = opticalIndexForLayer(layer, settings, wavelength);
     const propagation = scale(mul(nj, amplitudes.cosines[index]), 2 * Math.PI / wavelength);
     for (let sample = 0; sample <= samples; sample += 1) {
       const z = layer.thickness * sample / samples;
@@ -245,6 +312,8 @@ export {
   DEFAULT_SETTINGS,
   MATERIALS,
   fieldProfile,
+  incidentOpticalIndex,
+  opticalIndexForLayer,
   responseAtWavelength,
   scan2D,
   simulate

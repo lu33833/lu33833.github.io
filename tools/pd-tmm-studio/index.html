@@ -32,7 +32,7 @@
       <h1>PD 外延响应<br><em>传输矩阵工作台</em></h1>
       <p class="intro">自由搭建外延与金属层，指定真正产生光电流的吸收层。光谱、腔内场和厚度共振全部在浏览器本地计算。</p>
     </div>
-    <div class="hero-status" aria-label="工具状态"><div><span>ENGINE</span><b class="ok">LOCAL</b></div><div><span>POLARIZATION</span><b>TE + TM</b></div><div><span>MODEL</span><b>n + ik</b></div></div>
+    <div class="hero-status" aria-label="工具状态"><div><span>ENGINE</span><b class="ok">LOCAL</b></div><div><span>POLARIZATION</span><b>TE + TM</b></div><div><span>MODEL</span><b id="modelStatus">CONSTANT n + ik</b></div></div>
   </section>
 
   <main class="app-shell">
@@ -56,6 +56,10 @@
           <label class="field"><span>采样点数</span><div><input id="wlPoints" type="number" value="101" min="2" max="301" step="1"></div></label>
           <label class="field"><span>目标波长</span><div><input id="targetWl" type="number" value="1310" step="1"><i>nm</i></div></label>
         </div></div>
+        <div class="setting-group"><h3>材料色散 <span>DISPERSION</span></h3>
+          <label class="switch-row dispersion-switch"><span><b>使用波长依赖 n(λ), k(λ)</b><small>InGaAs 响应层 + InP 层与默认 InP 入射边界</small></span><input id="wavelengthDependent" type="checkbox"><i></i></label>
+          <div class="model-source"><span>300 K · O-BAND READY</span><b>InGaAs · Adachi complex dielectric model</b><b>InP · Pettit–Turner Sellmeier model</b><small>仅覆盖内置 InP 与被指定为响应层的 InGaAs；其他材料仍使用层列表中的常数 n/k。</small><a href="https://doi.org/10.1063/1.343580" target="_blank" rel="noreferrer">查看 InGaAs 原始文献 ↗</a><a href="https://doi.org/10.1063/1.1714410" target="_blank" rel="noreferrer">查看 InP 原始文献 ↗</a></div>
+        </div>
         <div class="setting-group"><h3>边界介质 <span>BOUNDARY</span></h3><div class="field-grid">
           <label class="field"><span>入射介质 n</span><div><input id="incidentN" type="number" value="3.22" step="0.01"></div></label>
           <label class="field"><span>入射介质 k</span><div><input id="incidentK" type="number" value="0" step="0.001"></div></label>
@@ -70,7 +74,7 @@
             <label class="field"><span>载流子收集效率</span><div><input id="collection" type="number" value="100" min="0" max="100" step="1"><i>%</i></div></label>
           </div>
         </div>
-        <p class="notice">结构 JSON 只保存层名称、材料与厚度；导入时 n/k 与颜色始终使用网页内置材料库。</p>
+        <p class="notice">结构 JSON 只保存层名称、材料与厚度；导入时 n/k 与颜色始终使用网页内置材料库。色散开关属于网页仿真设置，不写入结构 JSON。</p>
       </section>
     </aside>
 

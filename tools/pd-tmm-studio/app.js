@@ -1,4 +1,4 @@
-import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, scan2D, simulate } from './tmm-core.js';
+import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, incidentOpticalIndex, opticalIndexForLayer, scan2D, simulate } from './tmm-core.js';
 
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -31,6 +31,7 @@ function getSettings() {
     waistUm: Math.max(.1, finite($('waist').value, 3)),
     angularSamples: clamp(Math.round(finite($('angleSamples').value, 18)), 6, 48),
     gaussian: $('gaussian').checked,
+    wavelengthDependent: $('wavelengthDependent').checked,
     collectionEfficiency: clamp(finite($('collection').value, 100) / 100, 0, 1),
   };
 }
@@ -41,7 +42,8 @@ function populateSettings(next) {
   $('wlStart').value = next.wavelengthStart; $('wlEnd').value = next.wavelengthEnd;
   $('wlPoints').value = next.points; $('targetWl').value = next.targetWavelength;
   $('waist').value = next.waistUm; $('angleSamples').value = next.angularSamples;
-  $('gaussian').checked = next.gaussian; $('collection').value = next.collectionEfficiency * 100;
+  $('gaussian').checked = next.gaussian; $('wavelengthDependent').checked = next.wavelengthDependent;
+  $('collection').value = next.collectionEfficiency * 100;
 }
 
 function materialOptions(selected) {
@@ -114,11 +116,13 @@ function renderSchematic() {
   $('schematic').innerHTML = `
     <div class="schematic-boundary">EXIT MEDIUM · n = ${fmt(currentSettings.exitN, 2)}</div>
     ${reversed.map(layer => {
+      const opticalIndex = opticalIndexForLayer(layer, currentSettings, currentSettings.targetWavelength);
       const badge = layer.target ? 'PHOTOACTIVE' : layer.id === scanXId ? 'SCAN X' : layer.id === scanYId ? 'SCAN Y' : '';
-      const period = (layer.id === scanXId || layer.id === scanYId) ? ` · Λ≈${fmt(currentSettings.targetWavelength / (2 * Math.max(.01, layer.n)), 1)} nm` : '';
-      return `<div class="schematic-layer ${layer.target ? 'target' : ''} ${layer.thickness <= 10 ? 'thin' : ''}" style="--layer-color:${layer.color};height:${layerHeight(layer.thickness)}px"><div class="schematic-name"><b>${escapeHtml(layer.name)}</b><small>${escapeHtml(layer.material)} · n ${fmt(layer.n, 3)} · k ${fmt(layer.k, 3)}${period}</small></div><span class="schematic-thickness">${fmt(layer.thickness, layer.thickness % 1 ? 1 : 0)} nm</span>${badge ? `<i class="schematic-badge">${badge}</i>` : ''}</div>`;
+      const period = (layer.id === scanXId || layer.id === scanYId) ? ` · Λ≈${fmt(currentSettings.targetWavelength / (2 * Math.max(.01, opticalIndex.re)), 1)} nm` : '';
+      const dispersionMark = currentSettings.wavelengthDependent && (layer.material === 'InP' || (layer.material === 'InGaAs' && layer.target)) ? ' · λ' : '';
+      return `<div class="schematic-layer ${layer.target ? 'target' : ''} ${layer.thickness <= 10 ? 'thin' : ''}" style="--layer-color:${layer.color};height:${layerHeight(layer.thickness)}px"><div class="schematic-name"><b>${escapeHtml(layer.name)}</b><small>${escapeHtml(layer.material)} · n ${fmt(opticalIndex.re, 3)} · k ${fmt(opticalIndex.im, 4)}${dispersionMark}${period}</small></div><span class="schematic-thickness">${fmt(layer.thickness, layer.thickness % 1 ? 1 : 0)} nm</span>${badge ? `<i class="schematic-badge">${badge}</i>` : ''}</div>`;
     }).join('')}
-    <div class="schematic-boundary">INCIDENT MEDIUM · n = ${fmt(currentSettings.incidentN, 2)}</div>`;
+    <div class="schematic-boundary">INCIDENT MEDIUM · n = ${fmt(incidentOpticalIndex(currentSettings, currentSettings.targetWavelength).re, 3)}</div>`;
 }
 
 function refreshScanOptions(reset = true) {
@@ -143,6 +147,8 @@ function runSimulation() {
 
 function updateResults() {
   const target = result.target, peak = result.peak;
+  $('modelStatus').textContent = settings.wavelengthDependent ? 'DISPERSIVE n(λ) + ik(λ)' : 'CONSTANT n + ik';
+  $('modelStatus').classList.toggle('dispersive', settings.wavelengthDependent);
   $('targetMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 响应度`;
   $('absorptionMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 吸收效率`;
   $('responsivity').textContent = fmt(target.responsivity, 4);
@@ -239,7 +245,7 @@ function runThicknessScan() {
 }
 
 function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),200); }
-function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
+function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_n,target_k,target_alpha_cm-1,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.targetN,p.targetK,p.targetAlphaCm,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
 function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'top-to-bottom',layers:[...layers].reverse().map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
 
 async function importJsonFile(file) {
@@ -284,7 +290,7 @@ $('spectrumChart').addEventListener('pointermove',event=>{
   const canvas=$('spectrumChart'),rect=canvas.getBoundingClientRect(),left=48,right=48,x=event.clientX-rect.left,y=event.clientY-rect.top;
   if(x<left||x>rect.width-right){spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum();return}
   const ratio=clamp((x-left)/Math.max(1,rect.width-left-right),0,1),index=clamp(Math.round(ratio*(result.spectrum.length-1)),0,result.spectrum.length-1),point=result.spectrum[index];
-  spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>反射率 <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
+  spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>响应层 n / k <strong>${fmt(point.targetN,4)} / ${fmt(point.targetK,4)}</strong></span><span>响应层 α <strong>${fmt(point.targetAlphaCm,0)} cm⁻¹</strong></span><span>反射率 <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
   const tw=tooltip.offsetWidth||178,th=tooltip.offsetHeight||110;tooltip.style.left=`${clamp(x+14,8,rect.width-tw-8)}px`;tooltip.style.top=`${clamp(y-th/2,8,rect.height-th-8)}px`;drawSpectrum();
 });
 $('spectrumChart').addEventListener('pointerleave',()=>{spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum()});
@@ -292,6 +298,7 @@ $('importJson').addEventListener('click',()=>$('importJsonFile').click());
 $('importJsonFile').addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;const button=$('importJson');try{button.disabled=true;button.textContent='导入中…';await importJsonFile(file);button.textContent='导入成功';setTimeout(()=>button.textContent='导入 JSON',1200)}catch(error){button.textContent='导入失败';window.alert(`无法导入结构：${error.message}`);setTimeout(()=>button.textContent='导入 JSON',1600)}finally{button.disabled=false;event.target.value=''}});
 $('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
 ['targetWl','incidentN','exitN'].forEach(id=>$(id).addEventListener('input',renderSchematic));
+$('wavelengthDependent').addEventListener('change',()=>{renderSchematic();$('modelStatus').textContent=$('wavelengthDependent').checked?'DISPERSIVE · RUN TO APPLY':'CONSTANT n + ik'});
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawActive,120)});
 
 populateSettings(settings);renderLayerEditor();refreshScanOptions(false);renderSchematic();runSimulation();
