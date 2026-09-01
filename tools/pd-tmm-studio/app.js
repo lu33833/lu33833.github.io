@@ -32,6 +32,7 @@ function getSettings() {
     angularSamples: clamp(Math.round(finite($('angleSamples').value, 18)), 6, 48),
     gaussian: $('gaussian').checked,
     wavelengthDependent: $('wavelengthDependent').checked,
+    idealAr: $('idealAr').checked,
     collectionEfficiency: clamp(finite($('collection').value, 100) / 100, 0, 1),
   };
 }
@@ -43,6 +44,7 @@ function populateSettings(next) {
   $('wlPoints').value = next.points; $('targetWl').value = next.targetWavelength;
   $('waist').value = next.waistUm; $('angleSamples').value = next.angularSamples;
   $('gaussian').checked = next.gaussian; $('wavelengthDependent').checked = next.wavelengthDependent;
+  $('idealAr').checked = next.idealAr;
   $('collection').value = next.collectionEfficiency * 100;
 }
 
@@ -147,7 +149,7 @@ function runSimulation() {
 
 function updateResults() {
   const target = result.target, peak = result.peak;
-  $('modelStatus').textContent = settings.wavelengthDependent ? 'DISPERSIVE n(λ) + ik(λ)' : 'CONSTANT n + ik';
+  $('modelStatus').textContent = `${settings.wavelengthDependent ? 'DISPERSIVE n(λ) + ik(λ)' : 'CONSTANT n + ik'}${settings.idealAr ? ' · IDEAL AR' : ''}`;
   $('modelStatus').classList.toggle('dispersive', settings.wavelengthDependent);
   $('targetMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 响应度`;
   $('absorptionMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 吸收效率`;
@@ -157,7 +159,7 @@ function updateResults() {
   $('peakWl').textContent = `${fmt(peak.wavelength, 1)} nm`;
   $('peakResponse').textContent = `${fmt(peak.responsivity, 4)} A/W`;
   $('rtMetric').textContent = `${fmt(target.reflectance * 100, 1)} / ${fmt(target.transmittance * 100, 1)}%`;
-  $('parasitic').textContent = `PARASITIC ABS. ${fmt(target.parasitic * 100, 1)}%`;
+  $('parasitic').textContent = settings.idealAr ? `IDEAL AR · RAW R ${fmt(target.rawReflectance * 100, 1)}%` : `PARASITIC ABS. ${fmt(target.parasitic * 100, 1)}%`;
   $('spectrumRange').textContent = `${fmt(settings.wavelengthStart, 0)} — ${fmt(settings.wavelengthEnd, 0)} nm`;
   $('fieldWavelength').textContent = `${fmt(settings.targetWavelength, 0)} nm · NORMAL INCIDENCE TE`;
   [['R',target.reflectance],['A',target.absorption],['T',target.transmittance]].forEach(([key,value]) => {
@@ -245,7 +247,7 @@ function runThicknessScan() {
 }
 
 function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),200); }
-function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_n,target_k,target_alpha_cm-1,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.targetN,p.targetK,p.targetAlphaCm,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
+function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_n,target_k,target_alpha_cm-1,target_absorption,responsivity_A_W,reflectance,raw_reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.targetN,p.targetK,p.targetAlphaCm,p.absorption,p.responsivity,p.reflectance,p.rawReflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
 function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'top-to-bottom',layers:[...layers].reverse().map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
 
 async function importJsonFile(file) {
@@ -290,7 +292,7 @@ $('spectrumChart').addEventListener('pointermove',event=>{
   const canvas=$('spectrumChart'),rect=canvas.getBoundingClientRect(),left=48,right=48,x=event.clientX-rect.left,y=event.clientY-rect.top;
   if(x<left||x>rect.width-right){spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum();return}
   const ratio=clamp((x-left)/Math.max(1,rect.width-left-right),0,1),index=clamp(Math.round(ratio*(result.spectrum.length-1)),0,result.spectrum.length-1),point=result.spectrum[index];
-  spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>响应层 n / k <strong>${fmt(point.targetN,4)} / ${fmt(point.targetK,4)}</strong></span><span>响应层 α <strong>${fmt(point.targetAlphaCm,0)} cm⁻¹</strong></span><span>反射率 <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
+  spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>响应层 n / k <strong>${fmt(point.targetN,4)} / ${fmt(point.targetK,4)}</strong></span><span>响应层 α <strong>${fmt(point.targetAlphaCm,0)} cm⁻¹</strong></span>${settings.idealAr?`<span>未镀 AR 时反射 <strong>${fmt(point.rawReflectance*100,2)}%</strong></span>`:''}<span>反射率 <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
   const tw=tooltip.offsetWidth||178,th=tooltip.offsetHeight||110;tooltip.style.left=`${clamp(x+14,8,rect.width-tw-8)}px`;tooltip.style.top=`${clamp(y-th/2,8,rect.height-th-8)}px`;drawSpectrum();
 });
 $('spectrumChart').addEventListener('pointerleave',()=>{spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum()});
@@ -299,6 +301,7 @@ $('importJsonFile').addEventListener('change',async event=>{const file=event.tar
 $('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
 ['targetWl','incidentN','exitN'].forEach(id=>$(id).addEventListener('input',renderSchematic));
 $('wavelengthDependent').addEventListener('change',()=>{renderSchematic();$('modelStatus').textContent=$('wavelengthDependent').checked?'DISPERSIVE · RUN TO APPLY':'CONSTANT n + ik'});
+$('idealAr').addEventListener('change',()=>{$('modelStatus').textContent=$('idealAr').checked?'IDEAL AR · RUN TO APPLY':$('wavelengthDependent').checked?'DISPERSIVE · RUN TO APPLY':'CONSTANT n + ik'});
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawActive,120)});
 
 populateSettings(settings);renderLayerEditor();refreshScanOptions(false);renderSchematic();runSimulation();

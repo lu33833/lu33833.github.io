@@ -26,6 +26,7 @@ var DEFAULT_SETTINGS = {
   angularSamples: 18,
   gaussian: true,
   wavelengthDependent: false,
+  idealAr: false,
   collectionEfficiency: 1
 };
 var DEFAULT_LAYERS = [
@@ -237,8 +238,20 @@ function responseAtWavelength(layers, settings, wavelength) {
   }
   return { absorption: absorption / denominator, reflectance: reflectance / denominator, transmittance: transmittance / denominator };
 }
+
+function applyIdealArCoupling(response, settings) {
+  if (!settings.idealAr) return { ...response, rawReflectance: response.reflectance };
+  const coupledFraction = Math.max(1e-12, 1 - clamp(response.reflectance));
+  return {
+    absorption: response.absorption / coupledFraction,
+    reflectance: 0,
+    transmittance: response.transmittance / coupledFraction,
+    rawReflectance: response.reflectance
+  };
+}
+
 function spectralPoint(layers, settings, wavelength) {
-  const response = responseAtWavelength(layers, settings, wavelength);
+  const response = applyIdealArCoupling(responseAtWavelength(layers, settings, wavelength), settings);
   const targetLayer = layers.find((layer) => layer.target) || layers[0];
   const targetIndex = opticalIndexForLayer(targetLayer, settings, wavelength);
   const absorption = clamp(response.absorption);
@@ -253,6 +266,7 @@ function spectralPoint(layers, settings, wavelength) {
     targetK: targetIndex.im,
     targetAlphaCm: 4 * Math.PI * targetIndex.im / (wavelength / 1e7),
     reflectance,
+    rawReflectance: clamp(response.rawReflectance),
     transmittance,
     parasitic: clamp(1 - reflectance - transmittance - absorption)
   };
@@ -299,7 +313,7 @@ function scan2D(layers, settings, xId, yId, xRange, yRange, resolution) {
   let optimum = { x: xValues[0], y: yValues[0], responsivity: -Infinity };
   const values = yValues.map((y) => xValues.map((x) => {
     const candidate = layers.map((layer) => layer.id === xId ? { ...layer, thickness: x } : layer.id === yId ? { ...layer, thickness: y } : layer);
-    const result = responseAtWavelength(candidate, fastSettings, settings.targetWavelength);
+    const result = applyIdealArCoupling(responseAtWavelength(candidate, fastSettings, settings.targetWavelength), fastSettings);
     const responsivity = settings.targetWavelength / 1e3 * clamp(result.absorption) * settings.collectionEfficiency / 1.24;
     min = Math.min(min, responsivity);
     max = Math.max(max, responsivity);
