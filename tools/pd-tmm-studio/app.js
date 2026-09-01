@@ -14,6 +14,7 @@ let simulatedLayers = cloneLayers();
 let result = null;
 let scanResult = null;
 let activeView = 'spectrum';
+let spectrumHoverIndex = null;
 let scanXId = 'spacer-x';
 let scanYId = 'spacer-y';
 
@@ -142,6 +143,7 @@ function runSimulation() {
 function updateResults() {
   const target = result.target, peak = result.peak;
   $('targetMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 响应度`;
+  $('absorptionMetricLabel').textContent = `${fmt(settings.targetWavelength, 0)} nm 吸收效率`;
   $('responsivity').textContent = fmt(target.responsivity, 4);
   $('absorption').textContent = `${fmt(target.absorption * 100, 2)}%`;
   $('targetLayerName').textContent = simulatedLayers.find(layer => layer.target)?.name || 'Target layer';
@@ -194,6 +196,14 @@ function drawSpectrum() {
   ctx.beginPath();points.forEach((point,i)=>{const x=xMap(point.wavelength),y=rMap(point.responsivity);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle='#54e0d2';ctx.lineWidth=2.3;ctx.stroke();
   const tx=xMap(settings.targetWavelength);ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(184,242,235,.65)';ctx.beginPath();ctx.moveTo(tx,plot.y);ctx.lineTo(tx,plot.y+plot.h);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#8fc8c2';ctx.textAlign='center';ctx.fillText(`${fmt(settings.targetWavelength,0)} nm`,tx,plot.y+11);
   ctx.fillStyle='#5d7684';ctx.textAlign='left';for(let i=0;i<=4;i++)ctx.fillText(fmt(maxR*(4-i)/4,2),plot.x+plot.w+7,plot.y+plot.h*i/4+3);
+  const target=result.target, targetAbsY=yMap(target.absorption*100), targetRespY=rMap(target.responsivity);
+  ctx.fillStyle='#ef8659';ctx.beginPath();ctx.arc(tx,targetAbsY,3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#071018';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle='#54e0d2';ctx.beginPath();ctx.arc(tx,targetRespY,3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#071018';ctx.stroke();
+  if(spectrumHoverIndex!==null&&points[spectrumHoverIndex]){
+    const point=points[spectrumHoverIndex],hx=xMap(point.wavelength),ha=yMap(point.absorption*100),hr=rMap(point.responsivity);
+    ctx.strokeStyle='rgba(224,246,244,.72)';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(hx,plot.y);ctx.lineTo(hx,plot.y+plot.h);ctx.stroke();ctx.setLineDash([]);
+    [['#ef8659',ha],['#54e0d2',hr]].forEach(([color,y])=>{ctx.fillStyle=color;ctx.beginPath();ctx.arc(hx,y,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#071018';ctx.lineWidth=1.5;ctx.stroke()});
+  }
 }
 
 function drawField() {
@@ -242,9 +252,18 @@ function exportStructureSvg(){
 function resetAll(){layers=cloneLayers();settings=cloneSettings();scanXId='spacer-x';scanYId='spacer-y';scanResult=null;populateSettings(settings);renderLayerEditor();refreshScanOptions();$('emptyHeatmap').classList.remove('hidden');$('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>默认复现 spacer X / Y 腔共振图</small>';runSimulation()}
 
 document.querySelectorAll('.control-tab').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.control-tab').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('.control-view').forEach(view=>view.classList.toggle('active',view.id===`${button.dataset.control}Control`))}));
-document.querySelectorAll('.analysis-tab').forEach(button=>button.addEventListener('click',()=>{activeView=button.dataset.view;document.querySelectorAll('.analysis-tab').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('.analysis-view').forEach(view=>view.classList.toggle('active',view.id===`${activeView}View`));requestAnimationFrame(drawActive)}));
+document.querySelectorAll('.analysis-tab').forEach(button=>button.addEventListener('click',()=>{activeView=button.dataset.view;spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');document.querySelectorAll('.analysis-tab').forEach(x=>x.classList.toggle('active',x===button));document.querySelectorAll('.analysis-view').forEach(view=>view.classList.toggle('active',view.id===`${activeView}View`));requestAnimationFrame(drawActive)}));
 $('addLayer').addEventListener('click',()=>{const preset=MATERIALS.Custom;layers.push({id:`layer-${Date.now()}`,name:'Custom layer',material:'Custom',thickness:100,n:preset.n,k:preset.k,target:false,color:preset.color});renderLayerEditor();refreshScanOptions(false);renderSchematic()});
 $('scanX').addEventListener('change',event=>{scanXId=event.target.value;renderSchematic()});$('scanY').addEventListener('change',event=>{scanYId=event.target.value;renderSchematic()});
+$('spectrumChart').addEventListener('pointermove',event=>{
+  if(!result||activeView!=='spectrum')return;
+  const canvas=$('spectrumChart'),rect=canvas.getBoundingClientRect(),left=48,right=48,x=event.clientX-rect.left,y=event.clientY-rect.top;
+  if(x<left||x>rect.width-right){spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum();return}
+  const ratio=clamp((x-left)/Math.max(1,rect.width-left-right),0,1),index=clamp(Math.round(ratio*(result.spectrum.length-1)),0,result.spectrum.length-1),point=result.spectrum[index];
+  spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>反射率 <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
+  const tw=tooltip.offsetWidth||178,th=tooltip.offsetHeight||110;tooltip.style.left=`${clamp(x+14,8,rect.width-tw-8)}px`;tooltip.style.top=`${clamp(y-th/2,8,rect.height-th-8)}px`;drawSpectrum();
+});
+$('spectrumChart').addEventListener('pointerleave',()=>{spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum()});
 $('run').addEventListener('click',runSimulation);$('reset').addEventListener('click',resetAll);$('runScan').addEventListener('click',runThicknessScan);$('downloadCsv').addEventListener('click',exportCsv);$('exportJson').addEventListener('click',exportJson);$('downloadStructure').addEventListener('click',exportStructureSvg);
 ['targetWl','incidentN','exitN'].forEach(id=>$(id).addEventListener('input',renderSchematic));
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawActive,120)});

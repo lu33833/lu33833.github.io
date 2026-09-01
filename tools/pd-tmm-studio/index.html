@@ -75,7 +75,7 @@
     <section class="workspace">
       <div class="summary">
         <div class="panel metric cyan"><span id="targetMetricLabel">1310 nm 响应度</span><strong id="responsivity">—</strong><small>A/W · EXTERNAL</small></div>
-        <div class="panel metric orange"><span>响应层吸收率</span><strong id="absorption">—</strong><small id="targetLayerName">InGaAs absorber</small></div>
+        <div class="panel metric orange"><span id="absorptionMetricLabel">1310 nm 吸收效率</span><strong id="absorption">—</strong><small id="targetLayerName">InGaAs absorber</small></div>
         <div class="panel metric purple"><span>响应峰值</span><strong id="peakWl">—</strong><small id="peakResponse">—</small></div>
         <div class="panel metric blue"><span>反射 / 透射</span><strong id="rtMetric">—</strong><small id="parasitic">—</small></div>
       </div>
@@ -98,7 +98,8 @@
 
           <div class="analysis-view active" id="spectrumView">
             <div class="chart-heading"><div><b>目标层吸收与响应度</b><span id="spectrumRange">1260 — 1360 nm</span></div><div class="legend"><i class="abs"></i>吸收率 <i class="resp"></i>响应度</div></div>
-            <div class="canvas-wrap"><canvas id="spectrumChart"></canvas></div>
+            <div class="canvas-wrap spectrum-wrap"><canvas id="spectrumChart"></canvas><div class="chart-tooltip" id="spectrumTooltip" role="status" aria-live="polite"></div></div>
+            <p class="hover-hint">移动鼠标或手指查看任意采样波长的吸收效率与响应度</p>
             <div class="energy-grid">
               <div><span><i class="r"></i>反射 R</span><b id="energyR">—</b><em><i id="barR"></i></em></div>
               <div><span><i class="a"></i>目标吸收 Aₜ</span><b id="energyA">—</b><em><i id="barA"></i></em></div>
