@@ -133,12 +133,14 @@ function incidentOpticalIndex(settings, wavelength) {
 }
 
 function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes = false) {
-  const n0 = incidentOpticalIndex(settings, wavelength);
+  const externalN = incidentOpticalIndex(settings, wavelength);
+  const n0 = settings.idealAr && layers.length ? opticalIndexForLayer(layers[0], settings, wavelength) : externalN;
   const ns = C(settings.exitN, settings.exitK);
-  const theta0 = thetaDeg * Math.PI / 180;
-  const sin0 = Math.sin(theta0);
-  const cos0 = Math.cos(theta0);
-  const eta0Complex = pol === 0 ? scale(n0, cos0) : div(n0, C(cos0));
+  const thetaExternal = thetaDeg * Math.PI / 180;
+  const transverseIndex = scale(externalN, Math.sin(thetaExternal));
+  let cos0 = sqrt(sub(C(1), mul(div(transverseIndex, n0), div(transverseIndex, n0))));
+  if (cos0.re < 0) cos0 = neg(cos0);
+  const eta0Complex = pol === 0 ? mul(n0, cos0) : div(n0, cos0);
   const eta0Flux = eta0Complex.re;
   const eta0 = C(eta0Flux);
   const k0 = 2 * Math.PI / wavelength;
@@ -148,7 +150,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
   const deltas = [];
   for (const layer of layers) {
     const nj = opticalIndexForLayer(layer, settings, wavelength);
-    const sinJ = div(scale(n0, sin0), nj);
+    const sinJ = div(transverseIndex, nj);
     let cosJ = sqrt(sub(C(1), mul(sinJ, sinJ)));
     if (cosJ.re < 0) cosJ = neg(cosJ);
     const etaJ2 = pol === 0 ? mul(nj, cosJ) : div(nj, cosJ);
@@ -168,7 +170,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
     etas.push(etaJ2);
     deltas.push(delta2);
   }
-  const sinS = div(scale(n0, sin0), ns);
+  const sinS = div(transverseIndex, ns);
   let cosS = sqrt(sub(C(1), mul(sinS, sinS)));
   if (cosS.re < 0) cosS = neg(cosS);
   const etaS = pol === 0 ? mul(ns, cosS) : div(ns, cosS);
@@ -239,19 +241,8 @@ function responseAtWavelength(layers, settings, wavelength) {
   return { absorption: absorption / denominator, reflectance: reflectance / denominator, transmittance: transmittance / denominator };
 }
 
-function applyIdealArCoupling(response, settings) {
-  if (!settings.idealAr) return { ...response, rawReflectance: response.reflectance };
-  const coupledFraction = Math.max(1e-12, 1 - clamp(response.reflectance));
-  return {
-    absorption: response.absorption / coupledFraction,
-    reflectance: 0,
-    transmittance: response.transmittance / coupledFraction,
-    rawReflectance: response.reflectance
-  };
-}
-
 function spectralPoint(layers, settings, wavelength) {
-  const response = applyIdealArCoupling(responseAtWavelength(layers, settings, wavelength), settings);
+  const response = responseAtWavelength(layers, settings, wavelength);
   const targetLayer = layers.find((layer) => layer.target) || layers[0];
   const targetIndex = opticalIndexForLayer(targetLayer, settings, wavelength);
   const absorption = clamp(response.absorption);
@@ -266,7 +257,6 @@ function spectralPoint(layers, settings, wavelength) {
     targetK: targetIndex.im,
     targetAlphaCm: 4 * Math.PI * targetIndex.im / (wavelength / 1e7),
     reflectance,
-    rawReflectance: clamp(response.rawReflectance),
     transmittance,
     parasitic: clamp(1 - reflectance - transmittance - absorption)
   };
@@ -313,7 +303,7 @@ function scan2D(layers, settings, xId, yId, xRange, yRange, resolution) {
   let optimum = { x: xValues[0], y: yValues[0], responsivity: -Infinity };
   const values = yValues.map((y) => xValues.map((x) => {
     const candidate = layers.map((layer) => layer.id === xId ? { ...layer, thickness: x } : layer.id === yId ? { ...layer, thickness: y } : layer);
-    const result = applyIdealArCoupling(responseAtWavelength(candidate, fastSettings, settings.targetWavelength), fastSettings);
+    const result = responseAtWavelength(candidate, fastSettings, settings.targetWavelength);
     const responsivity = settings.targetWavelength / 1e3 * clamp(result.absorption) * settings.collectionEfficiency / 1.24;
     min = Math.min(min, responsivity);
     max = Math.max(max, responsivity);

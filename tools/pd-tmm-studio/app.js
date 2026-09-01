@@ -124,7 +124,7 @@ function renderSchematic() {
       const dispersionMark = currentSettings.wavelengthDependent && (layer.material === 'InP' || (layer.material === 'InGaAs' && layer.target)) ? ' · λ' : '';
       return `<div class="schematic-layer ${layer.target ? 'target' : ''} ${layer.thickness <= 10 ? 'thin' : ''}" style="--layer-color:${layer.color};height:${layerHeight(layer.thickness)}px"><div class="schematic-name"><b>${escapeHtml(layer.name)}</b><small>${escapeHtml(layer.material)} · n ${fmt(opticalIndex.re, 3)} · k ${fmt(opticalIndex.im, 4)}${dispersionMark}${period}</small></div><span class="schematic-thickness">${fmt(layer.thickness, layer.thickness % 1 ? 1 : 0)} nm</span>${badge ? `<i class="schematic-badge">${badge}</i>` : ''}</div>`;
     }).join('')}
-    <div class="schematic-boundary">INCIDENT MEDIUM · n = ${fmt(incidentOpticalIndex(currentSettings, currentSettings.targetWavelength).re, 3)}</div>`;
+    <div class="schematic-boundary">INCIDENT MEDIUM · n = ${fmt(incidentOpticalIndex(currentSettings, currentSettings.targetWavelength).re, 3)}${currentSettings.idealAr ? ' · IDEAL BACKSIDE AR' : ''}</div>`;
 }
 
 function refreshScanOptions(reset = true) {
@@ -159,7 +159,7 @@ function updateResults() {
   $('peakWl').textContent = `${fmt(peak.wavelength, 1)} nm`;
   $('peakResponse').textContent = `${fmt(peak.responsivity, 4)} A/W`;
   $('rtMetric').textContent = `${fmt(target.reflectance * 100, 1)} / ${fmt(target.transmittance * 100, 1)}%`;
-  $('parasitic').textContent = settings.idealAr ? `IDEAL AR · RAW R ${fmt(target.rawReflectance * 100, 1)}%` : `PARASITIC ABS. ${fmt(target.parasitic * 100, 1)}%`;
+  $('parasitic').textContent = settings.idealAr ? `BACKSIDE AR · PARASITIC ${fmt(target.parasitic * 100, 1)}%` : `PARASITIC ABS. ${fmt(target.parasitic * 100, 1)}%`;
   $('spectrumRange').textContent = `${fmt(settings.wavelengthStart, 0)} — ${fmt(settings.wavelengthEnd, 0)} nm`;
   $('fieldWavelength').textContent = `${fmt(settings.targetWavelength, 0)} nm · NORMAL INCIDENCE TE`;
   [['R',target.reflectance],['A',target.absorption],['T',target.transmittance]].forEach(([key,value]) => {
@@ -247,7 +247,7 @@ function runThicknessScan() {
 }
 
 function download(name, content, type) { const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),200); }
-function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_n,target_k,target_alpha_cm-1,target_absorption,responsivity_A_W,reflectance,raw_reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.targetN,p.targetK,p.targetAlphaCm,p.absorption,p.responsivity,p.reflectance,p.rawReflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
+function exportCsv(){if(!result)return;const lines=['wavelength_nm,target_n,target_k,target_alpha_cm-1,target_absorption,responsivity_A_W,reflectance,transmittance,parasitic_absorption',...result.spectrum.map(p=>[p.wavelength,p.targetN,p.targetK,p.targetAlphaCm,p.absorption,p.responsivity,p.reflectance,p.transmittance,p.parasitic].join(','))];download('pd-tmm-spectrum.csv',lines.join('\n'),'text/csv;charset=utf-8')}
 function exportJson(){download('pd-tmm-structure.json',JSON.stringify({version:1,stackOrder:'top-to-bottom',layers:[...layers].reverse().map(({name,material,thickness})=>({name,material,thickness}))},null,2),'application/json')}
 
 async function importJsonFile(file) {
@@ -277,7 +277,7 @@ function exportStructureSvg(){
   const s=getSettings(),ordered=[...layers].reverse(),heights=ordered.map(layer=>layerHeight(layer.thickness)),width=700,stackX=120,stackW=460,top=110,totalH=heights.reduce((a,b)=>a+b,0)+76,height=top+totalH+125;let y=top+38;
   const esc=value=>escapeHtml(value);let body=`<rect x="0" y="0" width="${width}" height="${height}" fill="#071018"/><text x="42" y="50" fill="#eef7f8" font-family="Arial,sans-serif" font-size="28" font-weight="700">PD TMM structure schematic</text><text x="42" y="77" fill="#7f98a8" font-family="monospace" font-size="12">${layers.length} layers · ${fmt(layers.reduce((a,l)=>a+l.thickness,0),1)} nm · ${fmt(s.targetWavelength,0)} nm</text><rect x="${stackX}" y="${top}" width="${stackW}" height="38" rx="7" fill="#3f4c54" stroke="#7a8b92"/><text x="${width/2}" y="${top+24}" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">EXIT MEDIUM · n=${fmt(s.exitN,2)}</text>`;
   ordered.forEach((layer,index)=>{const h=heights[index];body+=`<rect x="${stackX}" y="${y}" width="${stackW}" height="${h}" fill="${layer.color}" stroke="${layer.target?'#ffbb97':'#d6f3f0'}" stroke-width="${layer.target?4:1}"/><text x="${stackX+stackW/2-18}" y="${y+h/2+4}" text-anchor="middle" fill="#fff" stroke="#071018" stroke-width="3" paint-order="stroke" font-family="Arial" font-size="13" font-weight="700">${esc(layer.name)}</text><text x="${stackX+stackW+16}" y="${y+h/2+4}" fill="#c8d7dc" font-family="monospace" font-size="12">${fmt(layer.thickness,layer.thickness%1?1:0)} nm</text>`;y+=h});
-  body+=`<rect x="${stackX}" y="${y}" width="${stackW}" height="38" rx="7" fill="#3f4c54" stroke="#7a8b92"/><text x="${width/2}" y="${y+24}" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">INCIDENT MEDIUM · n=${fmt(s.incidentN,2)}</text><path d="M350 ${y+102}V${y+50}M350 ${y+50}l-8 12M350 ${y+50}l8 12" stroke="#54e0d2" stroke-width="4" fill="none" stroke-linecap="round"/><text x="350" y="${y+122}" text-anchor="middle" fill="#7f98a8" font-family="monospace" font-size="11">LIGHT FROM SUBSTRATE</text>`;
+  body+=`<rect x="${stackX}" y="${y}" width="${stackW}" height="38" rx="7" fill="#3f4c54" stroke="#7a8b92"/><text x="${width/2}" y="${y+24}" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="700">INCIDENT MEDIUM · n=${fmt(s.incidentN,2)}${s.idealAr?' · IDEAL BACKSIDE AR':''}</text><path d="M350 ${y+102}V${y+50}M350 ${y+50}l-8 12M350 ${y+50}l8 12" stroke="#54e0d2" stroke-width="4" fill="none" stroke-linecap="round"/><text x="350" y="${y+122}" text-anchor="middle" fill="#7f98a8" font-family="monospace" font-size="11">LIGHT FROM SUBSTRATE</text>`;
   download('pd-tmm-structure.svg',`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${body}</svg>`,'image/svg+xml');
 }
 
@@ -292,7 +292,7 @@ $('spectrumChart').addEventListener('pointermove',event=>{
   const canvas=$('spectrumChart'),rect=canvas.getBoundingClientRect(),left=48,right=48,x=event.clientX-rect.left,y=event.clientY-rect.top;
   if(x<left||x>rect.width-right){spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum();return}
   const ratio=clamp((x-left)/Math.max(1,rect.width-left-right),0,1),index=clamp(Math.round(ratio*(result.spectrum.length-1)),0,result.spectrum.length-1),point=result.spectrum[index];
-  spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>响应层 n / k <strong>${fmt(point.targetN,4)} / ${fmt(point.targetK,4)}</strong></span><span>响应层 α <strong>${fmt(point.targetAlphaCm,0)} cm⁻¹</strong></span>${settings.idealAr?`<span>未镀 AR 时反射 <strong>${fmt(point.rawReflectance*100,2)}%</strong></span>`:''}<span>反射率 <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
+  spectrumHoverIndex=index;const tooltip=$('spectrumTooltip');tooltip.innerHTML=`<b>${fmt(point.wavelength,1)} nm</b><span class="abs-value">吸收效率 <strong>${fmt(point.absorption*100,2)}%</strong></span><span class="resp-value">响应度 <strong>${fmt(point.responsivity,4)} A/W</strong></span><span>响应层 n / k <strong>${fmt(point.targetN,4)} / ${fmt(point.targetK,4)}</strong></span><span>响应层 α <strong>${fmt(point.targetAlphaCm,0)} cm⁻¹</strong></span><span>${settings.idealAr?'内部返回反射':'总反射率'} <strong>${fmt(point.reflectance*100,2)}%</strong></span><span>透射率 <strong>${fmt(point.transmittance*100,2)}%</strong></span>`;tooltip.classList.add('visible');
   const tw=tooltip.offsetWidth||178,th=tooltip.offsetHeight||110;tooltip.style.left=`${clamp(x+14,8,rect.width-tw-8)}px`;tooltip.style.top=`${clamp(y-th/2,8,rect.height-th-8)}px`;drawSpectrum();
 });
 $('spectrumChart').addEventListener('pointerleave',()=>{spectrumHoverIndex=null;$('spectrumTooltip').classList.remove('visible');drawSpectrum()});
