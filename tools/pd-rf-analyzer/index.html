@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08111d">
+  <meta name="description" content="在浏览器中联合分析高速光电探测器的等效电路、Touchstone S参数、Smith图、RC与渡越时间频率响应。">
+  <meta property="og:title" content="PD 射频响应分析器">
+  <meta property="og:description" content="PD/CPW 等效电路、S 参数与带宽联合分析工具">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://lu33833.github.io/tools/pd-rf-analyzer/">
+  <meta property="og:image" content="https://lu33833.github.io/assets/og.png">
+  <title>PD 射频响应分析器</title>
+  <style>
+    :root{--bg:#08111d;--panel:#0f1b2a;--panel2:#122236;--line:#26394d;--ink:#edf5fb;--muted:#8ca0b5;--cyan:#50ddd8;--blue:#75a8ff;--purple:#a18cff;--amber:#f3c66c;--red:#f47f78;--green:#b8f45d}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 86% 4%,#23436c66,transparent 31rem),radial-gradient(circle at 8% 65%,#103f4666,transparent 33rem),var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,select{font:inherit}button{cursor:pointer}a{color:inherit}.grid-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgb(255 255 255 / 2.2%) 1px,transparent 1px),linear-gradient(90deg,rgb(255 255 255 / 2.2%) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(#000,transparent 94%)}
+    .topbar{height:68px;padding:0 clamp(18px,4vw,64px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#08111dcc;backdrop-filter:blur(16px)}.brand{display:flex;align-items:center;gap:11px;text-decoration:none;font-size:12px;font-weight:720}.mark{width:38px;height:38px;display:grid;place-items:center;border:1px solid #3a536d;border-radius:9px;color:var(--cyan);background:#101d2c;font:800 10px ui-monospace,monospace}.top-actions{display:flex;gap:8px}.ghost,.primary-btn{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#101b2a;color:#9bb0c5;font-size:10px}.ghost:hover{border-color:#536b82;color:#fff}.primary-btn{border-color:#318c8b;background:#123438;color:#8ff4ef}.primary-btn:hover{background:#17484b}
+    .hero{padding:38px clamp(18px,5vw,76px) 28px;display:flex;align-items:end;justify-content:space-between;gap:35px;border-bottom:1px solid var(--line)}.eyebrow{margin:0 0 12px;color:var(--cyan);font:700 9px ui-monospace,monospace;letter-spacing:.15em}.eyebrow:before{content:"";display:inline-block;width:23px;height:2px;margin-right:8px;vertical-align:middle;background:var(--cyan)}h1{margin:0;font-size:clamp(34px,4.3vw,58px);line-height:1;letter-spacing:-.055em}.intro{max-width:680px;margin:14px 0 0;color:var(--muted);font-size:12px;line-height:1.75}.hero-status{min-width:290px;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#0d1928}.hero-status div{padding:14px 15px;border-right:1px solid var(--line)}.hero-status div:last-child{border:0}.hero-status span{display:block;color:#627990;font:8px ui-monospace,monospace;letter-spacing:.1em}.hero-status b{display:block;margin-top:7px;color:#d9e7f1;font:650 12px ui-monospace,monospace}.hero-status .ok{color:var(--green)}
+    .app{padding:20px clamp(12px,3vw,48px) 34px;display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px}.panel{min-width:0;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#122034,#0d1826);box-shadow:0 18px 44px rgb(0 0 0 / 15%)}.controls{padding:21px;align-self:start;position:sticky;top:12px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}.panel-head>div{display:flex;align-items:center;gap:9px}.step{width:27px;height:27px;display:grid;place-items:center;border-radius:7px;background:#1b2e43;color:#7ee3df;font:700 9px ui-monospace,monospace}.panel-head h2{margin:0;font-size:13px}.panel-head>span{color:#667c92;font-size:8px}
+    .section{padding:16px 0;border-top:1px solid var(--line)}.section:first-of-type{padding-top:0;border:0}.section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;color:#b8c7d5;font-size:10px;font-weight:700}.section-title span{color:#5f758a;font:8px ui-monospace,monospace}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field{min-width:0}.field.wide{grid-column:1/-1}.field label{display:block;margin-bottom:5px;color:#71869b;font-size:8px;letter-spacing:.03em}.input-wrap{height:36px;display:flex;align-items:center;border:1px solid var(--line);border-radius:7px;background:#0a1522;overflow:hidden}.input-wrap:focus-within{border-color:#388b8d;box-shadow:0 0 0 2px #50ddd814}.input-wrap input,.input-wrap select{min-width:0;width:100%;height:100%;padding:0 8px;border:0;outline:0;background:transparent;color:#e9f1f7;font:600 10px ui-monospace,monospace}.input-wrap span{padding-right:8px;color:#60758a;font-size:8px;white-space:nowrap}.input-wrap select{appearance:none}.hint{margin:8px 0 0;color:#5e7388;font-size:8px;line-height:1.6}
+    .upload{display:block;margin-top:8px;padding:10px;border:1px dashed #34506a;border-radius:8px;background:#0b1725;color:#8499ae;font-size:9px;line-height:1.45;cursor:pointer}.upload:hover{border-color:#4fb8b5;color:#b7eae8}.upload input{display:none}.upload b{display:block;margin-bottom:3px;color:#b8c6d4;font-size:9px}.file-state{color:#5ed6d2!important}.warning{margin-top:10px;padding:9px;border:1px solid #5e4e2b;border-radius:7px;background:#2c2417;color:#d6b879;font-size:8px;line-height:1.55}
+    .workspace{display:flex;min-width:0;flex-direction:column;gap:13px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:15px 17px}.metric span{color:#667d92;font:8px ui-monospace,monospace;letter-spacing:.08em}.metric strong{display:block;margin-top:8px;font:650 22px ui-monospace,monospace;letter-spacing:-.04em}.metric small{display:block;margin-top:5px;color:#72879b;font-size:8px}.metric.cyan strong{color:var(--cyan)}.metric.purple strong{color:#b2a4ff}
+    .analysis{padding:18px}.tabs{display:flex;align-items:center;gap:5px;margin-bottom:16px;border-bottom:1px solid var(--line)}.tab{padding:10px 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:#71869a;font-size:10px}.tab.active{border-color:var(--cyan);color:#dffcf9}.tab-actions{margin-left:auto;display:flex;gap:6px;padding-bottom:6px}.tab-actions button{padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:#0b1724;color:#788da1;font-size:8px}.tab-actions button:hover{border-color:#4a657e;color:#fff}.view{display:none}.view.active{display:block}.chart-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:12px}.chart-card{min-width:0;padding:13px;border:1px solid #203246;border-radius:10px;background:#091521}.chart-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.chart-title b{font-size:10px}.chart-title span{color:#5f7489;font:8px ui-monospace,monospace}.chart-stack{display:grid;grid-template-rows:1fr 1fr;gap:8px}.chart-note{padding:11px 2px 0;color:#667c91;font-size:8px;line-height:1.6}.canvas-wrap{position:relative;min-height:280px}.canvas-wrap.short{min-height:205px}.canvas-wrap.smith{min-height:430px}canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+    .circuit{margin-top:13px;padding:14px;border:1px solid #203246;border-radius:10px;background:#091521}.circuit svg{width:100%;height:auto;display:block}.circuit text{fill:#8ca2b7;font:9px ui-monospace,monospace}.circuit .wire{stroke:#698096;stroke-width:2;fill:none}.circuit .part{stroke:#50ddd8;stroke-width:2;fill:none}.circuit .node{fill:#50ddd8}
+    .table-card{padding:17px}.table-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.table-head h2{margin:0;font-size:12px}.table-head span{color:#60758a;font-size:8px}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:9px}th,td{padding:10px 9px;border-top:1px solid #203246;text-align:right;white-space:nowrap}th{color:#657a8f;font-weight:600}th:first-child,td:first-child{text-align:left}td{color:#b7c6d4;font-family:ui-monospace,monospace}.good{color:var(--cyan)}
+    footer{padding:0 clamp(18px,4vw,64px) 28px;display:flex;justify-content:space-between;color:#4f6477;font:8px ui-monospace,monospace;letter-spacing:.08em}
+    @media(max-width:1040px){.app{grid-template-columns:290px minmax(0,1fr)}.summary{grid-template-columns:1fr 1fr}.chart-grid{grid-template-columns:1fr}.canvas-wrap.smith{min-height:380px}.hero-status{display:none}}
+    @media(max-width:760px){.hero{padding-top:30px}.app{grid-template-columns:1fr}.controls{position:static}.summary{grid-template-columns:1fr 1fr}.chart-grid{grid-template-columns:1fr}.canvas-wrap{min-height:250px}.canvas-wrap.smith{min-height:330px}.tabs{overflow:auto}.tab{white-space:nowrap}.tab-actions{display:none}footer{flex-direction:column;gap:7px}}
+    @media(max-width:460px){.summary{grid-template-columns:1fr}.field-grid{grid-template-columns:1fr}.field.wide{grid-column:auto}.analysis{padding:12px}.canvas-wrap{min-height:230px}}
+  </style>
+</head>
+<body>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="../../" title="返回工具大厅"><span class="mark">RF</span><span>← 返回工具大厅</span></a>
+    <div class="top-actions"><button class="ghost" id="reset" type="button">恢复默认</button><button class="primary-btn" id="downloadCsvTop" type="button">导出数据</button></div>
+  </header>
+
+  <section class="hero">
+    <div><p class="eyebrow">PHOTODETECTOR · RF JOINT ANALYSIS</p><h1>PD 射频响应<br>联合分析器</h1><p class="intro">用同一套参数联合检查等效电路、S 参数与带宽预算。Touchstone、渡越时间和实测响应全部在浏览器本地解析，不上传服务器。</p></div>
+    <div class="hero-status" aria-label="工具状态"><div><span>MODEL</span><b>PD + CPW</b></div><div><span>REFERENCE</span><b>50 Ω</b></div><div><span>ENGINE</span><b class="ok">LOCAL</b></div></div>
+  </section>
+
+  <main class="app">
+    <aside class="panel controls">
+      <div class="panel-head"><div><span class="step">01</span><h2>模型与数据</h2></div><span>改变参数后自动重算</span></div>
+      <section class="section">
+        <div class="section-title">电路参数 <span>PD / CPW</span></div>
+        <div class="field-grid">
+          <div class="field wide"><label for="cjList">结电容扫描值</label><div class="input-wrap"><input id="cjList" value="20, 26" inputmode="decimal"><span>fF</span></div></div>
+          <div class="field"><label for="rs">串联电阻 Rs</label><div class="input-wrap"><input id="rs" type="number" value="23.5" min="0" step="0.1"><span>Ω</span></div></div>
+          <div class="field"><label for="ccpw">CPW 并联电容</label><div class="input-wrap"><input id="ccpw" type="number" value="10" min="0" step="0.1"><span>fF</span></div></div>
+          <div class="field"><label for="lcpw">CPW 串联电感</label><div class="input-wrap"><input id="lcpw" type="number" value="80" min="0" step="0.1"><span>pH</span></div></div>
+          <div class="field"><label for="z0">参考/负载阻抗</label><div class="input-wrap"><input id="z0" type="number" value="50" min="1" step="1"><span>Ω</span></div></div>
+          <div class="field"><label for="fmax">计算上限</label><div class="input-wrap"><input id="fmax" type="number" value="170" min="1" max="1000" step="1"><span>GHz</span></div></div>
+          <div class="field"><label for="channel">Touchstone 通道</label><div class="input-wrap"><select id="channel"><option value="s22">S22 → PD S11</option><option value="s11">S11</option><option value="s21">S21</option><option value="s12">S12</option></select></div></div>
+          <div class="field wide"><label for="rcTopology">RC 响应网络</label><div class="input-wrap"><select id="rcTopology"><option value="historical">复现历史提取 · 中间并联 Ccpw</option><option value="consistent">端口一致模型 · 端口并联 Ccpw</option></select></div></div>
+        </div>
+        <p class="hint">S 参数采用端口处 C<sub>CPW</sub> 并联、再串联 L<sub>CPW</sub> + R<sub>s</sub> + C<sub>j</sub> 的一端口模型。“复现历史提取”用于得到此前 20/26 fF 的 RC 结果；“端口一致模型”让 RC 与 S11 共用同一拓扑。S22 只有在端口映射明确时才应视为 PD 的 S11。</p>
+      </section>
+
+      <section class="section">
+        <div class="section-title">上传数据 <span>OPTIONAL</span></div>
+        <label class="upload"><input id="touchstone" type="file" accept=".s1p,.s2p"><b>Touchstone · .s1p / .s2p</b><span id="touchstoneState">未加载，仅显示电路模型</span></label>
+        <label class="upload"><input id="ftFile" type="file" accept=".csv,.txt,.log"><b>渡越时间响应 Ft</b><span id="ftState">两列：频率 GHz、响应 dB</span></label>
+        <label class="upload"><input id="measuredFiles" type="file" accept=".csv,.txt,.log" multiple><b>实测总响应 · 可多选</b><span id="measuredState">保留原始散点，不自动平移</span></label>
+        <div class="warning">请确认上传曲线的第二列是幅度 dB。若数据采用功率、线性幅值或已做探针损耗校正，应先统一定义。</div>
+      </section>
+
+      <div class="circuit" aria-label="当前等效电路">
+        <svg viewBox="0 0 560 176" role="img" aria-label="PD和CPW一端口等效电路">
+          <path class="wire" d="M35 40H118M118 40V78M118 132V150H505V40H520M118 40H205M276 40H329M399 40H505"/>
+          <circle class="node" cx="118" cy="40" r="4"/><circle class="node" cx="505" cy="40" r="4"/>
+          <path class="part" d="M101 78H135M101 91H135M118 91V132"/>
+          <path class="part" d="M205 40c8-22 18-22 26 0s18 22 26 0s18-22 19 0"/>
+          <path class="part" d="M329 40h10l7-15 14 30 14-30 14 30 11-15"/>
+          <path class="part" d="M488 78H522M488 91H522M505 40V78M505 91V132"/>
+          <text x="82" y="112">C_CPW</text><text x="216" y="78">L_CPW</text><text x="347" y="78">R_s</text><text x="476" y="112">C_j</text><text x="17" y="31">PORT</text><text x="438" y="164">GROUND</text>
+        </svg>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <div class="summary">
+        <div class="panel metric cyan"><span>最佳复数拟合</span><strong id="bestCj">—</strong><small id="bestCjNote">加载 Touchstone 后计算</small></div>
+        <div class="panel metric"><span>RC −3 dB</span><strong id="rcBw">—</strong><small id="rcBwNote">第一组 Cj</small></div>
+        <div class="panel metric purple"><span>总响应 −3 dB</span><strong id="totalBw">—</strong><small id="totalBwNote">未加载 Ft 时等于 RC</small></div>
+        <div class="panel metric"><span>低频电容账本</span><strong id="capLedger">—</strong><small>Cj + Ccpw，仅按当前拓扑</small></div>
+      </div>
+
+      <section class="panel analysis">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-view="reflection" role="tab">S 参数幅相</button>
+          <button class="tab" data-view="smith" role="tab">Smith 图</button>
+          <button class="tab" data-view="response" role="tab">RC / Ft / 总响应</button>
+          <div class="tab-actions"><button id="downloadPng" type="button">导出当前图 PNG</button><button id="downloadCsv" type="button">导出曲线 CSV</button></div>
+        </div>
+
+        <div class="view active" id="reflectionView">
+          <div class="chart-stack">
+            <div class="chart-card"><div class="chart-title"><b>反射幅度</b><span>20 log₁₀|Γ| · dB</span></div><div class="canvas-wrap short"><canvas id="magChart"></canvas></div></div>
+            <div class="chart-card"><div class="chart-title"><b>反射相位</b><span>UNWRAPPED · DEG</span></div><div class="canvas-wrap short"><canvas id="phaseChart"></canvas></div></div>
+          </div>
+          <p class="chart-note">实测曲线在复数 Γ 平面与模型对齐；相位绘图展开，但误差采用环形相位差，避免 ±180° 跳变造成虚假误差。</p>
+        </div>
+
+        <div class="view" id="smithView">
+          <div class="chart-card"><div class="chart-title"><b>Smith Chart</b><span>NORMALIZED TO Z₀</span></div><div class="canvas-wrap smith"><canvas id="smithChart"></canvas></div></div>
+        </div>
+
+        <div class="view" id="responseView">
+          <div class="chart-card"><div class="chart-title"><b>频率响应联合分析</b><span>AMPLITUDE · dB</span></div><div class="canvas-wrap smith"><canvas id="responseChart"></canvas></div></div>
+          <p class="chart-note">H<sub>total,dB</sub> = H<sub>RC,dB</sub> + F<sub>t,dB</sub>。上传 Ft 后直接使用原曲线，不自动替换为理想 sinc；实测数据保持原值。</p>
+        </div>
+      </section>
+
+      <section class="panel table-card">
+        <div class="table-head"><h2>参数对比与拟合指标</h2><span>COMMON FREQUENCY RANGE ONLY</span></div>
+        <div class="table-scroll"><table><thead><tr><th>Cj</th><th>RC BW</th><th>Total BW</th><th>RC Peak</th><th>Mag RMSE</th><th>Phase RMSE</th><th>Complex Γ RMSE</th></tr></thead><tbody id="metricsBody"></tbody></table></div>
+      </section>
+    </section>
+  </main>
+
+  <footer><span>MODEL · SHUNT C_CPW + SERIES L_CPW / R_s / C_j</span><span>ALL CALCULATIONS RUN LOCALLY IN YOUR BROWSER</span></footer>
+
+  <script>
+  (() => {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const colors = ['#50ddd8','#a18cff','#f3c66c','#75a8ff','#f47f78','#b8f45d'];
+    const state = {touchstone:null,ft:null,measured:[],models:[],activeView:'reflection'};
+    const C = (re,im=0) => ({re,im});
+    const add = (a,b) => C(a.re+b.re,a.im+b.im);
+    const mul = (a,b) => C(a.re*b.re-a.im*b.im,a.re*b.im+a.im*b.re);
+    const div = (a,b) => {const d=b.re*b.re+b.im*b.im;return C((a.re*b.re+a.im*b.im)/d,(a.im*b.re-a.re*b.im)/d)};
+    const inv = a => div(C(1),a);
+    const abs = a => Math.hypot(a.re,a.im);
+    const phase = a => Math.atan2(a.im,a.re)*180/Math.PI;
+    const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
+    const finite = (v,fallback) => Number.isFinite(Number(v)) ? Number(v) : fallback;
+    const db = v => 20*Math.log10(Math.max(v,1e-15));
+    const parseCj = () => [...new Set($('cjList').value.split(/[,，\s]+/).map(Number).filter(v=>Number.isFinite(v)&&v>0))].slice(0,6);
+    const params = () => ({cjs:parseCj().length?parseCj():[20],rs:Math.max(0,finite($('rs').value,23.5)),ccpw:Math.max(0,finite($('ccpw').value,10)),lcpw:Math.max(0,finite($('lcpw').value,80)),z0:Math.max(1,finite($('z0').value,50)),fmax:clamp(finite($('fmax').value,170),1,1000),rcTopology:$('rcTopology').value});
+    const interp = (xs,ys,x) => {
+      if(!xs||!xs.length||x<xs[0]||x>xs[xs.length-1]) return null;
+      let lo=0,hi=xs.length-1;
+      while(hi-lo>1){const m=(lo+hi)>>1;if(xs[m]<=x)lo=m;else hi=m}
+      if(xs[lo]===x||lo===hi)return ys[lo];
+      const t=(x-xs[lo])/(xs[hi]-xs[lo]);return ys[lo]+t*(ys[hi]-ys[lo]);
+    };
+    const linspace = (a,b,n) => Array.from({length:n},(_,i)=>a+(b-a)*i/(n-1));
+    const circuitPoint = (fGHz,cjFf,p) => {
+      const w=2*Math.PI*fGHz*1e9,cj=cjFf*1e-15,cc=p.ccpw*1e-15,l=p.lcpw*1e-12;
+      const zcj=C(0,-1/(w*cj)),zseries=C(p.rs,w*l+zcj.im);
+      const zcpw=cc>0?C(0,-1/(w*cc)):C(1e30,0);
+      const zin=inv(add(inv(zseries),inv(zcpw)));
+      const gamma=div(C(zin.re-p.z0,zin.im),C(zin.re+p.z0,zin.im));
+      let h;
+      if(p.rcTopology==='historical'){
+        const zLoad=C(p.z0,w*l),zMid=inv(add(inv(zcpw),inv(zLoad))),zBranch=add(C(p.rs),zMid);
+        const branchCurrent=inv(add(C(1),mul(C(0,w*cj),zBranch)));
+        const loadCurrent=mul(branchCurrent,div(zcpw,add(zcpw,zLoad)));
+        h=abs(loadCurrent);
+      }else{
+        const yb=C(1/p.z0,w*cc),zs=C(p.rs,w*l),jwCj=C(0,w*cj);
+        const denominator=add(mul(jwCj,add(C(1),mul(zs,yb))),yb);
+        h=abs(inv(denominator))/p.z0;
+      }
+      return {gamma,rcDb:db(h)};
+    };
+    const firstCrossing = (x,y,level=-3) => {
+      for(let i=1;i<y.length;i++) if(y[i-1]>level&&y[i]<=level){const t=(level-y[i-1])/(y[i]-y[i-1]);return x[i-1]+t*(x[i]-x[i-1])}
+      return null;
+    };
+    const peakOf = (x,y) => {let i=0;for(let k=1;k<y.length;k++)if(y[k]>y[i])i=k;return {f:x[i],db:y[i]}};
+    function unwrap(values){if(!values.length)return[];const out=[values[0]];for(let i=1;i<values.length;i++){let v=values[i],d=v-out[i-1];while(d>180){v-=360;d-=360}while(d<-180){v+=360;d+=360}out.push(v)}return out}
+
+    function parseTouchstone(text,name){
+      const ext=(name.toLowerCase().match(/\.s([12])p$/)||[])[1],ports=ext?Number(ext):2,chunk=ports===1?3:9;
+      let unit='ghz',format='ma',z0=50;const nums=[];
+      text.split(/\r?\n/).forEach(raw=>{
+        const line=raw.split('!')[0].trim();if(!line)return;
+        if(line[0]==='#'){const t=line.slice(1).toLowerCase().split(/\s+/);unit=t[0]||unit;const fi=t.findIndex(x=>['ri','ma','db'].includes(x));if(fi>=0)format=t[fi];const ri=t.indexOf('r');if(ri>=0&&Number(t[ri+1]))z0=Number(t[ri+1]);return}
+        if(line[0]==='[')return;
+        line.split(/[\s,;]+/).forEach(v=>{const n=Number(v);if(Number.isFinite(n))nums.push(n)});
+      });
+      const factor={hz:1e-9,khz:1e-6,mhz:1e-3,ghz:1}[unit]||1;
+      const f=[],sets={s11:[],s21:[],s12:[],s22:[]},keys=ports===1?['s11']:['s11','s21','s12','s22'];
+      for(let i=0;i+chunk-1<nums.length;i+=chunk){
+        f.push(nums[i]*factor);
+        keys.forEach((key,k)=>{const a=nums[i+1+2*k],b=nums[i+2+2*k];let g;if(format==='ri')g=C(a,b);else{const mag=format==='db'?Math.pow(10,a/20):a,ang=b*Math.PI/180;g=C(mag*Math.cos(ang),mag*Math.sin(ang))}sets[key].push(g)});
+      }
+      if(f.length<2)throw new Error('没有识别到有效 Touchstone 数据');
+      return {name,ports,f,sets,z0,format};
+    }
+    function parseResponse(text,name){
+      const rows=[];
+      text.split(/\r?\n/).forEach(raw=>{const line=raw.trim();if(!line||/^[#!;%]/.test(line))return;const found=line.match(/[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/g);if(found&&found.length>=2){const f=Number(found[0]),v=Number(found[1]);if(Number.isFinite(f)&&Number.isFinite(v)&&f>=0)rows.push([f,v])}});
+      rows.sort((a,b)=>a[0]-b[0]);const unique=[];rows.forEach(r=>{if(!unique.length||r[0]>unique[unique.length-1][0])unique.push(r)});
+      if(unique.length<2)throw new Error('需要至少两行“频率 GHz, 响应 dB”数据');
+      return {name,f:unique.map(r=>r[0]),db:unique.map(r=>r[1])};
+    }
+    function metricsFor(model,p){
+      if(!state.touchstone)return null;
+      const key=state.touchstone.ports===1?'s11':$('channel').value,meas=state.touchstone.sets[key];if(!meas)return null;
+      const errs=[];state.touchstone.f.forEach((f,i)=>{if(f<=p.fmax){const gm=circuitPoint(f,model.cj,p).gamma,g=meas[i];const magE=db(abs(gm))-db(abs(g));let ph=phase(mul(gm,C(g.re,-g.im)));while(ph>180)ph-=360;while(ph<-180)ph+=360;errs.push({magE,ph,cr:gm.re-g.re,ci:gm.im-g.im})}});
+      if(!errs.length)return null;
+      const mean=fn=>errs.reduce((s,e)=>s+fn(e),0)/errs.length;
+      return {magRmse:Math.sqrt(mean(e=>e.magE*e.magE)),magMae:mean(e=>Math.abs(e.magE)),phaseRmse:Math.sqrt(mean(e=>e.ph*e.ph)),complexRmse:Math.sqrt(mean(e=>e.cr*e.cr+e.ci*e.ci)),n:errs.length};
+    }
+    function calculate(){
+      const p=params(),f=linspace(.01,p.fmax,1200);state.models=p.cjs.map((cj,index)=>{
+        const points=f.map(x=>circuitPoint(x,cj,p)),gamma=points.map(x=>x.gamma),rc=points.map(x=>x.rcDb);
+        const ft=state.ft?f.map(x=>interp(state.ft.f,state.ft.db,x)):f.map(()=>0);
+        const total=rc.map((v,i)=>ft[i]===null?null:v+ft[i]),validF=f.filter((_,i)=>total[i]!==null),validTotal=total.filter(v=>v!==null);
+        return {cj,index,f,gamma,mag:gamma.map(g=>db(abs(g))),phase:unwrap(gamma.map(phase)),rc,ft,total,rcBw:firstCrossing(f,rc),totalBw:firstCrossing(validF,validTotal),peak:peakOf(f,rc),metrics:null};
+      });
+      state.models.forEach(m=>m.metrics=metricsFor(m,p));
+      updateSummary(p);drawAll();
+    }
+    const bwText=(v,fmax)=>v===null?'>'+fmax.toFixed(0)+' GHz':v.toFixed(2)+' GHz';
+    function updateSummary(p){
+      const first=state.models[0],ranked=state.models.filter(m=>m.metrics).sort((a,b)=>a.metrics.complexRmse-b.metrics.complexRmse);
+      $('bestCj').textContent=ranked.length?ranked[0].cj.toFixed(2)+' fF':'—';$('bestCjNote').textContent=ranked.length?'Complex Γ RMSE '+ranked[0].metrics.complexRmse.toFixed(4):'加载 Touchstone 后计算';
+      $('rcBw').textContent=bwText(first.rcBw,p.fmax);$('rcBwNote').textContent='Cj = '+first.cj+' fF · '+(p.rcTopology==='historical'?'历史提取':'端口一致');
+      $('totalBw').textContent=bwText(first.totalBw,p.fmax);$('totalBwNote').textContent=state.ft?'已合成 '+state.ft.name:'未加载 Ft，总响应等于 RC';
+      $('capLedger').textContent=(first.cj+p.ccpw).toFixed(2)+' fF';
+      $('metricsBody').innerHTML=state.models.map(m=>'<tr><td><span style="color:'+colors[m.index%colors.length]+'">●</span> '+m.cj+' fF</td><td>'+bwText(m.rcBw,p.fmax)+'</td><td>'+bwText(m.totalBw,p.fmax)+'</td><td>'+m.peak.db.toFixed(3)+' dB @ '+m.peak.f.toFixed(1)+'</td><td>'+(m.metrics?m.metrics.magRmse.toFixed(3)+' dB':'—')+'</td><td>'+(m.metrics?m.metrics.phaseRmse.toFixed(2)+'°':'—')+'</td><td class="'+(ranked[0]===m?'good':'')+'">'+(m.metrics?m.metrics.complexRmse.toFixed(4):'—')+'</td></tr>').join('');
+    }
+    function sizeCanvas(canvas){
+      const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(10,Math.round(r.width*dpr));canvas.height=Math.max(10,Math.round(r.height*dpr));const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w:r.width,h:r.height};
+    }
+    function lineChart(canvas,series,opt={}){
+      const {ctx,w,h}=sizeCanvas(canvas),pad={l:53,r:16,t:16,b:35},all=series.flatMap(s=>s.y.filter(Number.isFinite));if(!all.length)return;
+      const xmin=opt.xmin??0,xmax=opt.xmax??Math.max(...series.flatMap(s=>s.x)),rawMin=opt.ymin??Math.min(...all),rawMax=opt.ymax??Math.max(...all),range=Math.max(1,rawMax-rawMin),ymin=opt.ymin??Math.floor((rawMin-.1*range)/2)*2,ymax=opt.ymax??Math.ceil((rawMax+.1*range)/2)*2;
+      const X=x=>pad.l+(x-xmin)/(xmax-xmin)*(w-pad.l-pad.r),Y=y=>pad.t+(ymax-y)/(ymax-ymin)*(h-pad.t-pad.b);
+      ctx.clearRect(0,0,w,h);ctx.font='8px ui-monospace, monospace';ctx.lineWidth=1;ctx.textAlign='right';ctx.textBaseline='middle';
+      for(let i=0;i<=5;i++){const y=ymin+(ymax-ymin)*i/5,py=Y(y);ctx.strokeStyle='#203246';ctx.beginPath();ctx.moveTo(pad.l,py);ctx.lineTo(w-pad.r,py);ctx.stroke();ctx.fillStyle='#61768b';ctx.fillText(y.toFixed(Math.abs(ymax-ymin)<10?1:0),pad.l-8,py)}
+      ctx.textAlign='center';ctx.textBaseline='top';for(let i=0;i<=5;i++){const x=xmin+(xmax-xmin)*i/5,px=X(x);ctx.strokeStyle='#203246';ctx.beginPath();ctx.moveTo(px,pad.t);ctx.lineTo(px,h-pad.b);ctx.stroke();ctx.fillStyle='#61768b';ctx.fillText(x.toFixed(0),px,h-pad.b+9)}
+      ctx.fillStyle='#71869a';ctx.fillText('Frequency (GHz)',(pad.l+w-pad.r)/2,h-10);
+      if(opt.zeroLine&&ymin<0&&ymax>0){ctx.strokeStyle='#40546a';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(pad.l,Y(0));ctx.lineTo(w-pad.r,Y(0));ctx.stroke();ctx.setLineDash([])}
+      series.forEach(s=>{ctx.strokeStyle=s.color;ctx.fillStyle=s.color;ctx.globalAlpha=s.alpha??1;ctx.lineWidth=s.width??1.7;ctx.setLineDash(s.dash||[]);if(s.points){s.x.forEach((x,i)=>{const y=s.y[i];if(!Number.isFinite(y)||x<xmin||x>xmax)return;ctx.beginPath();ctx.arc(X(x),Y(y),s.radius||2.1,0,Math.PI*2);ctx.fill()})}else{ctx.beginPath();let started=false;s.x.forEach((x,i)=>{const y=s.y[i];if(!Number.isFinite(y)||x<xmin||x>xmax){started=false;return}if(!started){ctx.moveTo(X(x),Y(y));started=true}else ctx.lineTo(X(x),Y(y))});ctx.stroke()}ctx.setLineDash([]);ctx.globalAlpha=1});
+      let lx=pad.l+8,ly=pad.t+8;ctx.font='8px ui-monospace, monospace';ctx.textAlign='left';ctx.textBaseline='middle';series.forEach(s=>{const width=ctx.measureText(s.name).width+27;if(lx+width>w-pad.r){lx=pad.l+8;ly+=14}ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+14,ly);ctx.stroke();ctx.fillStyle='#9db0c0';ctx.fillText(s.name,lx+19,ly);lx+=width});
+    }
+    function smithChart(canvas,series){
+      const {ctx,w,h}=sizeCanvas(canvas),cx=w/2,cy=h/2+5,r=Math.min(w,h)*.42,X=x=>cx+r*x,Y=y=>cy-r*y;
+      ctx.clearRect(0,0,w,h);ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();ctx.strokeStyle='#263b4e';ctx.lineWidth=1;
+      const gammaFromZ=(rr,xx)=>div(C(rr-1,xx),C(rr+1,xx));
+      [0,.2,.5,1,2,5].forEach(rr=>{ctx.beginPath();for(let i=0;i<=220;i++){const x=-12+24*i/220,g=gammaFromZ(rr,x);i?ctx.lineTo(X(g.re),Y(g.im)):ctx.moveTo(X(g.re),Y(g.im))}ctx.stroke()});
+      [-5,-2,-1,-.5,-.2,.2,.5,1,2,5].forEach(xx=>{ctx.beginPath();for(let i=0;i<=220;i++){const rr=12*i/220,g=gammaFromZ(rr,xx);i?ctx.lineTo(X(g.re),Y(g.im)):ctx.moveTo(X(g.re),Y(g.im))}ctx.stroke()});ctx.restore();
+      ctx.strokeStyle='#617b91';ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.stroke();
+      series.forEach(s=>{ctx.strokeStyle=s.color;ctx.fillStyle=s.color;ctx.lineWidth=s.width||1.8;ctx.globalAlpha=s.alpha??1;if(s.points){s.g.forEach(g=>{ctx.beginPath();ctx.arc(X(g.re),Y(g.im),2.2,0,Math.PI*2);ctx.fill()})}else{ctx.beginPath();s.g.forEach((g,i)=>i?ctx.lineTo(X(g.re),Y(g.im)):ctx.moveTo(X(g.re),Y(g.im)));ctx.stroke()}ctx.globalAlpha=1});
+      let x=16,y=18;ctx.textAlign='left';ctx.textBaseline='middle';ctx.font='8px ui-monospace, monospace';series.forEach(s=>{ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+14,y);ctx.stroke();ctx.fillStyle='#9db0c0';ctx.fillText(s.name,x+19,y);y+=14});
+    }
+    function measuredReflectionSeries(kind,p){
+      if(!state.touchstone)return[];const key=state.touchstone.ports===1?'s11':$('channel').value,g=state.touchstone.sets[key]||[];if(kind==='smith')return[{name:'Measured '+key.toUpperCase(),g,color:'#ffffff',points:true}];
+      return [{name:'Measured '+key.toUpperCase(),x:state.touchstone.f,y:kind==='mag'?g.map(v=>db(abs(v))):unwrap(g.map(phase)),color:'#ffffff',points:true,radius:1.7}];
+    }
+    function drawAll(){
+      if(!state.models.length)return;const p=params(),modelMag=state.models.map(m=>({name:'Model Cj '+m.cj+' fF',x:m.f,y:m.mag,color:colors[m.index%colors.length]})),modelPhase=state.models.map(m=>({name:'Model Cj '+m.cj+' fF',x:m.f,y:m.phase,color:colors[m.index%colors.length]}));
+      lineChart($('magChart'),[...measuredReflectionSeries('mag',p),...modelMag],{xmin:0,xmax:p.fmax});
+      lineChart($('phaseChart'),[...measuredReflectionSeries('phase',p),...modelPhase],{xmin:0,xmax:p.fmax});
+      smithChart($('smithChart'),[...measuredReflectionSeries('smith',p),...state.models.map(m=>({name:'Model '+m.cj+' fF',g:m.gamma,color:colors[m.index%colors.length]}))]);
+      const response=[];state.models.forEach(m=>{response.push({name:'RC '+m.cj+' fF',x:m.f,y:m.rc,color:colors[m.index%colors.length],dash:[5,3],alpha:.75});response.push({name:'Total '+m.cj+' fF',x:m.f,y:m.total,color:colors[m.index%colors.length],width:2.3})});
+      if(state.ft)response.push({name:'Ft · '+state.ft.name,x:state.ft.f,y:state.ft.db,color:'#ffffff',dash:[2,3],alpha:.8});
+      state.measured.forEach((m,i)=>response.push({name:m.name,x:m.f,y:m.db,color:colors[(i+3)%colors.length],points:true,radius:2.2}));
+      response.push({name:'−3 dB',x:[0,p.fmax],y:[-3,-3],color:'#6c7f91',dash:[5,5],alpha:.75});
+      lineChart($('responseChart'),response,{xmin:0,xmax:p.fmax,ymax:Math.max(2,...response.flatMap(s=>s.y.filter(Number.isFinite))),zeroLine:true});
+    }
+    function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+    function exportCsv(){
+      if(!state.models.length)return;const rows=[['frequency_GHz',...state.models.flatMap(m=>['Cj'+m.cj+'_gamma_real','Cj'+m.cj+'_gamma_imag','Cj'+m.cj+'_S11_dB','Cj'+m.cj+'_phase_deg','Cj'+m.cj+'_RC_dB','Cj'+m.cj+'_Ft_dB','Cj'+m.cj+'_total_dB'])]];
+      state.models[0].f.forEach((f,i)=>rows.push([f.toFixed(6),...state.models.flatMap(m=>[m.gamma[i].re,m.gamma[i].im,m.mag[i],m.phase[i],m.rc[i],m.ft[i],m.total[i]])]));
+      download('pd_rf_analysis.csv',new Blob([rows.map(r=>r.map(v=>v===null?'':v).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}));
+    }
+    function exportPng(){const map={reflection:$('magChart'),smith:$('smithChart'),response:$('responseChart')},canvas=map[state.activeView];canvas.toBlob(blob=>download('pd_rf_'+state.activeView+'.png',blob),'image/png')}
+    function setFileState(id,text){$(id).textContent=text;$(id).classList.add('file-state')}
+    $('touchstone').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{state.touchstone=parseTouchstone(await file.text(),file.name);if(state.touchstone.ports===1)$('channel').value='s11';setFileState('touchstoneState',file.name+' · '+state.touchstone.f.length+' points · Z0 '+state.touchstone.z0+' Ω');calculate()}catch(err){$('touchstoneState').textContent='读取失败：'+err.message}});
+    $('ftFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{state.ft=parseResponse(await file.text(),file.name);setFileState('ftState',file.name+' · '+state.ft.f.length+' points');calculate()}catch(err){$('ftState').textContent='读取失败：'+err.message}});
+    $('measuredFiles').addEventListener('change',async e=>{try{state.measured=await Promise.all([...e.target.files].map(async f=>parseResponse(await f.text(),f.name.replace(/\.[^.]+$/,''))));setFileState('measuredState',state.measured.length+' 条实测曲线已加载');calculate()}catch(err){$('measuredState').textContent='读取失败：'+err.message}});
+    ['cjList','rs','ccpw','lcpw','z0','fmax'].forEach(id=>$(id).addEventListener('input',calculate));$('channel').addEventListener('change',calculate);$('rcTopology').addEventListener('change',calculate);
+    document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));state.activeView=btn.dataset.view;$(state.activeView+'View').classList.add('active');requestAnimationFrame(drawAll)}));
+    $('downloadCsv').addEventListener('click',exportCsv);$('downloadCsvTop').addEventListener('click',exportCsv);$('downloadPng').addEventListener('click',exportPng);
+    $('reset').addEventListener('click',()=>{$('cjList').value='20, 26';$('rs').value=23.5;$('ccpw').value=10;$('lcpw').value=80;$('z0').value=50;$('fmax').value=170;$('channel').value='s22';$('rcTopology').value='historical';state.touchstone=null;state.ft=null;state.measured=[];$('touchstone').value='';$('ftFile').value='';$('measuredFiles').value='';$('touchstoneState').textContent='未加载，仅显示电路模型';$('ftState').textContent='两列：频率 GHz、响应 dB';$('measuredState').textContent='保留原始散点，不自动平移';calculate()});
+    let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawAll,120)});calculate();
+  })();
+  </script>
+</body>
+</html>

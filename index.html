@@ -20,7 +20,7 @@
       <span class="brand-glyph">LU</span>
       <span><b>LAB TOOLS</b><small>PHOTONICS · ENGINEERING</small></span>
     </a>
-    <div class="system-status"><i></i><span>系统在线</span><b>02</b> 个工具</div>
+    <div class="system-status"><i></i><span>系统在线</span><b>03</b> 个工具</div>
   </header>
 
   <main>
@@ -74,15 +74,24 @@
           </div>
         </a>
 
-        <article class="tool-card placeholder secondary" aria-label="工具插槽，待添加">
-          <div class="placeholder-grid"><span class="plus">+</span><span class="card-number">03</span></div>
-          <div class="card-body">
-            <div class="card-meta"><span>FUTURE MODULE</span><span>EMPTY SLOT</span></div>
-            <h3>工具插槽</h3>
-            <p>为后续器件设计、带宽预算与参数换算工具预留。</p>
-            <div class="launch muted"><span>待添加</span><b>—</b></div>
+        <a class="tool-card active rf-card" href="tools/pd-rf-analyzer/">
+          <div class="rf-card-art" aria-hidden="true">
+            <span class="card-number">03</span>
+            <span class="ready"><i></i> READY</span>
+            <div class="rf-grid"></div>
+            <div class="rf-trace trace-a"></div>
+            <div class="rf-trace trace-b"></div>
+            <div class="rf-node node-a"></div><div class="rf-node node-b"></div>
+            <div class="smith-ring"><i></i><b></b></div>
+            <span class="rf-label">S11 · RC · Ft</span>
           </div>
-        </article>
+          <div class="card-body">
+            <div class="card-meta"><span>PHOTODETECTOR</span><span>RF ANALYSIS</span></div>
+            <h3>PD 射频响应分析器</h3>
+            <p>联合分析等效电路、Touchstone 幅相与 Smith 图，并合成 RC、渡越时间和实测总响应。</p>
+            <div class="launch"><span>启动工具</span><b aria-hidden="true">↗</b></div>
+          </div>
+        </a>
       </div>
     </section>
   </main>
