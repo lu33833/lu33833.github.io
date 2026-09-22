@@ -1,4 +1,4 @@
-import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, incidentOpticalIndex, opticalIndexForLayer, responseAtWavelength, scan2D, simulate } from './tmm-core.js?v=20260901-4';
+import { DEFAULT_LAYERS, DEFAULT_SETTINGS, MATERIALS, incidentOpticalIndex, opticalIndexForLayer, responseAtWavelength, scan2D, simulate } from './tmm-core.js?v=20260922-1';
 
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -367,16 +367,15 @@ async function importJsonFile(file) {
   $('scanResult').innerHTML='<span>REFERENCE</span><b>等待扫描</b><small>已载入新的层结构</small>'; runSimulation();
 }
 
-function printLayerColor(layer){const palette={Au:'#ffd21a',Pt:'#b3b3b3',Ti:'#8f8f8f',InGaAs:'#d79a27',InP:'#4d72d8','InGaAsP Q1.03':'#27ada8','InGaAsP Q1.2':'#43d4ca','InGaAsP Q1.4':'#4bc7c2',Air:'#f3f4f6','SiO₂':'#cfe9ef',SiN:'#80b9c8',Custom:'#c4c7cb'};return palette[layer.material]||layer.color||'#c4c7cb'}
+function printLayerColor(layer){const palette={Au:'#ffd21a',Pt:'#b3b3b3',Ti:'#8f8f8f',InGaAs:'#d79a27',InP:'#4d72d8','InGaAsP Q1.03':'#27ada8','InGaAsP Q1.2':'#43d4ca','InGaAsP Q1.4':'#4bc7c2',Air:'#f3f4f6','SiO₂':'#cfe9ef',SiN:'#80b9c8',Si:'#788a99',Custom:'#c4c7cb'};return palette[layer.material]||layer.color||'#c4c7cb'}
 
 function exportStructureSvg(){
   const s=getSettings(),ordered=[...layers].reverse(),heights=ordered.map(layer=>clamp(Math.round(layerHeight(layer.thickness)*.92),46,84));
   const width=920,stackX=260,stackW=420,top=126,totalH=heights.reduce((sum,value)=>sum+value,0),height=top+totalH+175;
   let y=top,body=`<rect width="${width}" height="${height}" fill="#ffffff"/><text x="34" y="45" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700">PD epitaxial / metal structure</text><text x="34" y="77" fill="#333333" font-family="Arial,Helvetica,sans-serif" font-size="16">${layers.length} layers · total ${fmt(layers.reduce((sum,layer)=>sum+layer.thickness,0),1)} nm · reference wavelength ${fmt(s.targetWavelength,0)} nm</text><text x="${stackX+stackW/2}" y="${top-16}" text-anchor="middle" fill="#333333" font-family="Arial,Helvetica,sans-serif" font-size="14">Exit medium · n = ${fmt(s.exitN,2)}</text>`;
   ordered.forEach((layer,index)=>{
-    const h=heights[index],center=y+h/2,fontSize=layer.name.length>28?12:layer.name.length>21?13:15,opticalIndex=opticalIndexForLayer(layer,s,s.targetWavelength);
+    const h=heights[index],center=y+h/2,fontSize=layer.name.length>28?12:layer.name.length>21?13:15;
     body+=`<rect x="${stackX}" y="${y}" width="${stackW}" height="${h}" fill="${printLayerColor(layer)}" stroke="#111111" stroke-width="${layer.target?3:2}"/><text x="${stackX+stackW/2}" y="${center+5}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="700">${escapeHtml(layer.name)}</text><text x="${stackX+stackW+22}" y="${center+5}" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="16">${fmt(layer.thickness,layer.thickness%1?1:0)} nm</text>`;
-    if(layer.id===scanXId||layer.id===scanYId){const label=layer.id===scanXId?'X':'Y',period=s.targetWavelength/(2*Math.max(.01,opticalIndex.re)),boxY=center-28;body+=`<path d="M ${stackX-14} ${y+5} H ${stackX-38} V ${y+h-5} H ${stackX-14}" fill="none" stroke="#111111" stroke-width="2"/><rect x="42" y="${boxY}" width="156" height="56" rx="5" fill="#ffffff" stroke="#111111" stroke-width="2"/><text x="120" y="${boxY+21}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="15" font-weight="700">${label} period</text><text x="120" y="${boxY+43}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="15">≈ ${fmt(period,1)} nm</text><line x1="198" y1="${center}" x2="${stackX-38}" y2="${center}" stroke="#111111" stroke-width="2"/>`}
     y+=h;
   });
   body+=`<text x="${stackX+stackW/2}" y="${y+26}" text-anchor="middle" fill="#333333" font-family="Arial,Helvetica,sans-serif" font-size="14">Incident medium · n = ${fmt(s.incidentN,2)}${s.idealAr?' · ideal backside AR':''}</text><path d="M ${stackX+stackW/2} ${y+103} V ${y+50} M ${stackX+stackW/2} ${y+50} l -9 14 M ${stackX+stackW/2} ${y+50} l 9 14" fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round"/><text x="${stackX+stackW/2}" y="${y+132}" text-anchor="middle" fill="#111111" font-family="Arial,Helvetica,sans-serif" font-size="16">LIGHT FROM SUBSTRATE</text>`;

@@ -11,6 +11,7 @@ var MATERIALS = {
   Air: { n: 1, k: 0, color: "#dbe8e5" },
   "SiO\u2082": { n: 1.45, k: 0, color: "#a9d5ce" },
   SiN: { n: 2.02, k: 0, color: "#679eaf" },
+  Si: { n: 3.504, k: 0, color: "#788a99" },
   Custom: { n: 2, k: 0, color: "#8a8f98" }
 };
 var DEFAULT_SETTINGS = {
