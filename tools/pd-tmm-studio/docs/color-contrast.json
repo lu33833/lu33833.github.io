@@ -1,0 +1,29 @@
+{
+  "method": "WCAG 2.x sRGB relative luminance; unrounded values used for checks",
+  "metrics": [
+    {
+      "scheme": "Gray + Teal",
+      "buttonWhite": 4.5626657931753005,
+      "primaryOnPage": 15.475590546459427,
+      "secondaryOnPage": 5.6206017475239705,
+      "controlBorderOnWhite": 3.3190497783477215,
+      "selectedText": 10.845993480178027
+    },
+    {
+      "scheme": "Slate + Indigo",
+      "buttonWhite": 5.20619729312045,
+      "primaryOnPage": 15.584805733390347,
+      "secondaryOnPage": 5.646742136270373,
+      "controlBorderOnWhite": 3.30129309753753,
+      "selectedText": 5.350659685603875
+    },
+    {
+      "scheme": "Sand + Bronze",
+      "buttonWhite": 5.8315597267957635,
+      "primaryOnPage": 15.475987701578308,
+      "secondaryOnPage": 5.733182909545131,
+      "controlBorderOnWhite": 3.340363632671445,
+      "selectedText": 10.741081879477669
+    }
+  ]
+}

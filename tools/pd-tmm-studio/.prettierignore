@@ -1,0 +1,10 @@
+# 计算核心保留原公式排版，独立行注释可维护，计算语句由回归检查核对
+src/tmm-core.js
+
+# 第三方分发文件和调研、验证产物
+src/vendor-ag-grid.js
+node_modules/
+.npm-cache/
+qa/
+docs/
+package-lock.json

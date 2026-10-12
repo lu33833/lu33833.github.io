@@ -1,4 +1,5 @@
-// ../pd-tmm-studio/lib/tmm.ts
+// 计算模型来自原工具站 tools/pd-tmm-studio，来源提交见 docs/development.md
+// 材料预设的 n、k 为无量纲数值，color 保留给旧版结构数据使用
 var MATERIALS = {
   InP: { n: 3.22, k: 0, color: "#50837a" },
   InGaAs: { n: 3.65, k: 0.12, color: "#df744c" },
@@ -14,6 +15,7 @@ var MATERIALS = {
   Si: { n: 3.504, k: 0, color: "#788a99" },
   Custom: { n: 2, k: 0, color: "#8a8f98" }
 };
+// 波长与层厚用 nm，束腰用 µm，collectionEfficiency 取 0–1
 var DEFAULT_SETTINGS = {
   incidentN: 3.22,
   incidentK: 0,
@@ -31,6 +33,7 @@ var DEFAULT_SETTINGS = {
   idealAr: false,
   collectionEfficiency: 1
 };
+// 层序从入射侧衬底排到出射侧金属，前端表格使用相反顺序
 var DEFAULT_LAYERS = [
   { id: "uid", name: "InP UID", material: "InP", thickness: 100, n: 3.22, k: 0, target: false, color: "#50837a" },
   { id: "p-bottom", name: "InP p+ bottom", material: "InP", thickness: 500, n: 3.22, k: 0, target: false, color: "#5d9287" },
@@ -48,6 +51,7 @@ var DEFAULT_LAYERS = [
   { id: "ti", name: "Ti adhesion", material: "Ti", thickness: 5, n: 3.72, k: 3.58, target: false, color: "#777b80" },
   { id: "au", name: "Au mirror", material: "Au", thickness: 100, n: 0.419, k: 8.42, target: false, color: "#d5aa39" }
 ];
+// 复数运算用 { re, im } 表示，后面的导纳和传播矩阵都依赖这组运算
 var C = (re, im = 0) => ({ re, im });
 var add = (a, b) => C(a.re + b.re, a.im + b.im);
 var sub = (a, b) => C(a.re - b.re, a.im - b.im);
@@ -75,8 +79,8 @@ var sqrt = (z) => {
 var cexpI = (z, sign = 1) => exp(C(-sign * z.im, sign * z.re));
 var clamp = (x, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, x));
 
-// Adachi, J. Appl. Phys. 66, 6030 (1989), In(1-x)Ga(x)As with x = 0.48.
-// The full complex dielectric function is evaluated at every wavelength.
+// Adachi, J. Appl. Phys. 66, 6030 (1989), In(1-x)Ga(x)As with x = 0.48
+// 对每个波长计算完整复介电函数，再换算为复折射率
 function inGaAsAdachiIndex(wavelengthNm) {
   const energy = 1239.841984 / wavelengthNm;
   const E0 = 0.75, delta0 = 0.29, E1 = 2.57, delta1 = 0.26, E2 = 4.41, Eg = 1.20;
@@ -112,6 +116,7 @@ function inGaAsAdachiIndex(wavelengthNm) {
   ));
 }
 
+// InGaAs 的 O-band 校准表，每行依次是波长 nm、n、k
 const INGAAS_O_BAND_TABLE = [
   [1260, 3.667, 0.1221],
   [1270, 3.663, 0.1217],
@@ -126,6 +131,7 @@ const INGAAS_O_BAND_TABLE = [
   [1360, 3.633, 0.1167]
 ];
 
+// 在相邻校准点之间线性插值，超出范围时使用最近端点
 function inGaAsOBandIndex(wavelengthNm) {
   const first = INGAAS_O_BAND_TABLE[0];
   const last = INGAAS_O_BAND_TABLE[INGAAS_O_BAND_TABLE.length - 1];
@@ -144,7 +150,8 @@ function inGaAsOBandIndex(wavelengthNm) {
   return C(last[1], last[2]);
 }
 
-// Pettit & Turner, J. Appl. Phys. 36, 2081 (1965); wavelength is in micrometres.
+// Pettit & Turner, J Appl Phys 36, 2081 (1965)
+// Sellmeier 公式的波长单位为 µm，入口参数仍使用 nm
 function inPIndex(wavelengthNm) {
   const wavelengthUm = wavelengthNm / 1e3;
   const wavelength2 = wavelengthUm * wavelengthUm;
@@ -153,6 +160,7 @@ function inPIndex(wavelengthNm) {
   return C(Math.sqrt(Math.max(0, n2)), 0);
 }
 
+// 开启色散后更新 InP 和 InGaAs 响应层，其余层使用输入的 n、k
 function opticalIndexForLayer(layer, settings, wavelength) {
   if (!settings.wavelengthDependent) return C(layer.n, layer.k);
   if (layer.material === "InP") return inPIndex(wavelength);
@@ -162,12 +170,15 @@ function opticalIndexForLayer(layer, settings, wavelength) {
   return C(layer.n, layer.k);
 }
 
+// 入射边界仍使用默认 InP 参数时，才跟随 InP 色散模型变化
 function incidentOpticalIndex(settings, wavelength) {
   const usesDefaultInPBoundary = settings.wavelengthDependent &&
     Math.abs(settings.incidentN - MATERIALS.InP.n) < 1e-9 && Math.abs(settings.incidentK) < 1e-12;
   return usesDefaultInPBoundary ? inPIndex(wavelength) : C(settings.incidentN, settings.incidentK);
 }
 
+// 求单个入射角与偏振的传输矩阵，pol 为 0 时是 TE，为 1 时是 TM
+// keepAmplitudes 用于场强剖面，常规光谱只需要吸收、反射和透射
 function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes = false) {
   const externalN = incidentOpticalIndex(settings, wavelength);
   const n0 = settings.idealAr && layers.length ? opticalIndexForLayer(layers[0], settings, wavelength) : externalN;
@@ -184,6 +195,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
   const cosines = [];
   const etas = [];
   const deltas = [];
+  // 按层序累乘传播矩阵，并保存每层的角度、导纳和相位厚度
   for (const layer of layers) {
     const nj = opticalIndexForLayer(layer, settings, wavelength);
     const sinJ = div(transverseIndex, nj);
@@ -206,6 +218,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
     etas.push(etaJ2);
     deltas.push(delta2);
   }
+  // 结合出射介质边界，求出整段结构的反射和透射振幅
   const sinS = div(transverseIndex, ns);
   let cosS = sqrt(sub(C(1), mul(sinS, sinS)));
   if (cosS.re < 0) cosS = neg(cosS);
@@ -213,6 +226,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
   const denom = add(add(mul(eta0, m11), mul(mul(eta0, etaS), m12)), add(m21, mul(etaS, m22)));
   const r = div(sub(add(mul(eta0, m11), mul(mul(eta0, etaS), m12)), add(m21, mul(etaS, m22))), denom);
   const t = div(scale(eta0, 2), denom);
+  // 从第一层开始递推前后向振幅，供吸收率和场强计算使用
   const forward = Array.from({ length: layers.length }, () => C(0));
   const backward = Array.from({ length: layers.length }, () => C(0));
   const eta1 = etas[0];
@@ -225,6 +239,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
     forward[j + 1] = scale(add(mul(mul(add(C(1), ratio), forward[j]), expPlus), mul(mul(sub(C(1), ratio), backward[j]), expMinus)), 0.5);
     backward[j + 1] = scale(add(mul(mul(sub(C(1), ratio), forward[j]), expPlus), mul(mul(add(C(1), ratio), backward[j]), expMinus)), 0.5);
   }
+  // 响应层两侧的能流差就是该层吸收，归一化到入射能流
   const targetIndex = Math.max(0, layers.findIndex((layer) => layer.target));
   const a = forward[targetIndex];
   const b = backward[targetIndex];
@@ -248,6 +263,7 @@ function solveAngle(layers, settings, wavelength, thetaDeg, pol, keepAmplitudes 
     amplitudes: keepAmplitudes ? { forward, backward, cosines } : void 0
   };
 }
+// 法向入射取 TE/TM 平均，高斯光束则对入射角做加权积分
 function responseAtWavelength(layers, settings, wavelength) {
   if (!settings.gaussian) {
     const te = solveAngle(layers, settings, wavelength, 0, 0);
@@ -258,6 +274,7 @@ function responseAtWavelength(layers, settings, wavelength) {
       transmittance: 0.5 * (te.transmittance + tm.transmittance)
     };
   }
+  // 束腰越小角谱越宽，梯形积分的两端点权重减半
   const thetaWidth = wavelength / (Math.PI * incidentOpticalIndex(settings, wavelength).re * settings.waistUm * 1e3);
   const thetaMax = 4 * thetaWidth;
   const samples = Math.max(6, Math.round(settings.angularSamples));
@@ -277,6 +294,8 @@ function responseAtWavelength(layers, settings, wavelength) {
   return { absorption: absorption / denominator, reflectance: reflectance / denominator, transmittance: transmittance / denominator };
 }
 
+// 把单波长能量分配转换为响应度，同时返回该波长的材料参数
+// 响应度单位为 A/W，吸收系数单位为 cm⁻¹
 function spectralPoint(layers, settings, wavelength) {
   const response = responseAtWavelength(layers, settings, wavelength);
   const targetLayer = layers.find((layer) => layer.target) || layers[0];
@@ -297,6 +316,7 @@ function spectralPoint(layers, settings, wavelength) {
     parasitic: clamp(1 - reflectance - transmittance - absorption)
   };
 }
+// 在波长范围内等间距采样，目标波长另算一次，峰值取光谱采样中的最大值
 function simulate(layers, settings) {
   const points = Math.max(2, Math.min(301, Math.round(settings.points)));
   const spectrum = Array.from({ length: points }, (_, index) => {
@@ -309,6 +329,7 @@ function simulate(layers, settings) {
   const field = fieldProfile(layers, settings, settings.targetWavelength);
   return { spectrum, target, peak, field, totalThickness };
 }
+// 用目标波长的法向 TE 解计算各层场强，最后按整段结构的最大值归一化
 function fieldProfile(layers, settings, wavelength) {
   const solution = solveAngle(layers, settings, wavelength, 0, 0, true);
   const amplitudes = solution.amplitudes;
@@ -329,6 +350,8 @@ function fieldProfile(layers, settings, wavelength) {
   const max = Math.max(...points.map((point) => point.intensity), 1e-12);
   return points.map((point) => ({ ...point, intensity: point.intensity / max }));
 }
+// 按 Y 行、X 列生成响应度矩阵，扫描只替换候选层厚，不修改输入结构
+// 角度采样最多取 10 点，以控制双层扫描耗时
 function scan2D(layers, settings, xId, yId, xRange, yRange, resolution) {
   const count = Math.max(8, Math.min(41, Math.round(resolution)));
   const xValues = Array.from({ length: count }, (_, i) => xRange[0] + (xRange[1] - xRange[0]) * i / (count - 1));
@@ -348,6 +371,7 @@ function scan2D(layers, settings, xId, yId, xRange, yRange, resolution) {
   }));
   return { xValues, yValues, values, min, max, optimum };
 }
+// 对外提供模型默认值、折射率查询和三类计算入口
 export {
   DEFAULT_LAYERS,
   DEFAULT_SETTINGS,

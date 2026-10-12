@@ -1,0 +1,245 @@
+{
+  "date": "2026-10-09",
+  "fileKey": "VnVWWBCN1UYaG9sWmAkQOA",
+  "pageId": "2:2",
+  "tableId": "18:1419",
+  "visualValidation": "passed after header and radio alignment correction",
+  "scope": "Static editable Figma design; no prototype simulation or website implementation",
+  "mutatedNodeIds": [
+    "18:1394",
+    "I18:1432;4629:1840586",
+    "I18:1432;21:2463",
+    "I18:1432;21:2469",
+    "I18:1454;4629:1840586",
+    "I18:1454;21:2463",
+    "I18:1454;21:2469",
+    "I18:1478;4629:1840586",
+    "I18:1478;21:2463",
+    "I18:1478;21:2469",
+    "I18:1501;4321:291574",
+    "I18:1501;84:16165",
+    "I18:1501;4325:500301",
+    "I18:1524;4321:291574",
+    "I18:1524;84:16165",
+    "I18:1524;4325:500301",
+    "I18:1547;4321:291574",
+    "I18:1547;84:16165",
+    "I18:1547;4325:500301",
+    "I18:1571;4629:1840586",
+    "I18:1571;21:2463",
+    "I18:1571;21:2469",
+    "I18:1611;4629:1840586",
+    "I18:1611;21:2463",
+    "I18:1611;21:2469"
+  ],
+  "validation": {
+    "comparedValues": 105,
+    "errors": [],
+    "observed": [
+      {
+        "row": 1,
+        "values": [
+          "01",
+          "Au mirror",
+          "Au",
+          "100",
+          "0.419",
+          "8.42"
+        ],
+        "response": false
+      },
+      {
+        "row": 2,
+        "values": [
+          "02",
+          "Ti adhesion",
+          "Ti",
+          "5",
+          "3.72",
+          "3.58"
+        ],
+        "response": false
+      },
+      {
+        "row": 3,
+        "values": [
+          "03",
+          "InP n+ spacer Y",
+          "InP",
+          "90.5",
+          "3.22",
+          "0"
+        ],
+        "response": false
+      },
+      {
+        "row": 4,
+        "values": [
+          "04",
+          "InP n−",
+          "InP",
+          "300",
+          "3.22",
+          "0"
+        ],
+        "response": false
+      },
+      {
+        "row": 5,
+        "values": [
+          "05",
+          "InP n+",
+          "InP",
+          "20",
+          "3.22",
+          "0"
+        ],
+        "response": false
+      },
+      {
+        "row": 6,
+        "values": [
+          "06",
+          "Q1.03 upper",
+          "InGaAsP Q1.03",
+          "10",
+          "3.3006",
+          "0"
+        ],
+        "response": false
+      },
+      {
+        "row": 7,
+        "values": [
+          "07",
+          "Q1.2 upper",
+          "InGaAsP Q1.2",
+          "10",
+          "3.4194",
+          "0.001224"
+        ],
+        "response": false
+      },
+      {
+        "row": 8,
+        "values": [
+          "08",
+          "Q1.4 upper",
+          "InGaAsP Q1.4",
+          "10",
+          "3.5392",
+          "0.099118"
+        ],
+        "response": false
+      },
+      {
+        "row": 9,
+        "values": [
+          "09",
+          "InGaAs absorber",
+          "InGaAs",
+          "750",
+          "3.65",
+          "0.12"
+        ],
+        "response": true
+      },
+      {
+        "row": 10,
+        "values": [
+          "10",
+          "Q1.4 lower",
+          "InGaAsP Q1.4",
+          "10",
+          "3.5392",
+          "0.099118"
+        ],
+        "response": false
+      },
+      {
+        "row": 11,
+        "values": [
+          "11",
+          "Q1.03 lower",
+          "InGaAsP Q1.03",
+          "10",
+          "3.3006",
+          "0"
+        ],
+        "response": false
+      },
+      {
+        "row": 12,
+        "values": [
+          "12",
+          "InP p+ spacer X",
+          "InP",
+          "64.5",
+          "3.22",
+          "0"
+        ],
+        "response": false
+      },
+      {
+        "row": 13,
+        "values": [
+          "13",
+          "InGaAs p+ contact",
+          "InGaAs",
+          "100",
+          "3.65",
+          "0.12"
+        ],
+        "response": false
+      },
+      {
+        "row": 14,
+        "values": [
+          "14",
+          "InP p+ bottom",
+          "InP",
+          "500",
+          "3.22",
+          "0"
+        ],
+        "response": false
+      },
+      {
+        "row": 15,
+        "values": [
+          "15",
+          "InP UID",
+          "InP",
+          "100",
+          "3.22",
+          "0"
+        ],
+        "response": false
+      }
+    ],
+    "columns": 8,
+    "rowsPerColumn": [
+      15,
+      15,
+      15,
+      15,
+      15,
+      15,
+      15,
+      15
+    ],
+    "bodyBounds": {
+      "x": -933,
+      "y": -374,
+      "width": 1862,
+      "height": 786
+    }
+  },
+  "radioDot": {
+    "id": "18:1394",
+    "constraints": {
+      "horizontal": "CENTER",
+      "vertical": "CENTER"
+    }
+  }
+}

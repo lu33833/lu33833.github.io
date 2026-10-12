@@ -1,0 +1,24 @@
+{
+  "name": "pd-tmm-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PD 外延结构光学响应分析工作台",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node tests/core.test.mjs",
+    "vendor": "node scripts/vendor.mjs",
+    "format": "prettier --write index.html \"src/**/*.{js,css}\" \"scripts/*.mjs\" \"tests/*.mjs\" package.json .prettierrc.json",
+    "format:check": "prettier --check index.html \"src/**/*.{js,css}\" \"scripts/*.mjs\" \"tests/*.mjs\" package.json .prettierrc.json"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ag-grid-community": "36.2.0",
+    "lucide": "1.55.0"
+  },
+  "devDependencies": {
+    "prettier": "3.9.9"
+  }
+}

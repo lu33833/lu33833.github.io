@@ -1,0 +1,221 @@
+{
+  "date": "2026-10-10",
+  "fileKey": "gXWK7WOrtZxYjcrjaMOgVn",
+  "scope": "Targeted layout cleanup of current v2 designs while preserving user-deleted status lines and existing components.",
+  "shared": {
+    "createdNodeIds": [
+      "44:3649",
+      "44:3662",
+      "44:3671"
+    ],
+    "mutatedNodeIds": [
+      "28:50",
+      "28:58",
+      "28:64",
+      "28:70",
+      "28:78",
+      "28:89",
+      "28:95",
+      "28:101",
+      "28:107",
+      "28:113",
+      "28:124",
+      "28:130",
+      "28:136",
+      "28:142",
+      "28:148",
+      "29:1569",
+      "29:1510",
+      "29:1521"
+    ],
+    "textChanges": [
+      {
+        "id": "28:50",
+        "before": "导入结构",
+        "after": "导入"
+      },
+      {
+        "id": "28:58",
+        "before": "导出结构",
+        "after": "导出"
+      },
+      {
+        "id": "28:89",
+        "before": "导入结构",
+        "after": "导入"
+      },
+      {
+        "id": "28:95",
+        "before": "导出结构",
+        "after": "导出"
+      },
+      {
+        "id": "28:124",
+        "before": "导入结构",
+        "after": "导入"
+      },
+      {
+        "id": "28:130",
+        "before": "导出结构",
+        "after": "导出"
+      }
+    ],
+    "profileBounds": [
+      312,
+      654
+    ],
+    "headerHeight": 64
+  },
+  "layout": {
+    "createdNodeIds": [
+      "45:3543"
+    ],
+    "mutatedNodeIds": [
+      "32:1901",
+      "32:2726",
+      "32:2857",
+      "45:3543",
+      "32:1940",
+      "32:1906",
+      "32:1941",
+      "32:1942",
+      "32:3676",
+      "32:3600",
+      "32:3609",
+      "32:3669",
+      "32:3610",
+      "32:3618",
+      "32:3624",
+      "32:3630",
+      "32:3642",
+      "32:3637"
+    ],
+    "removedNodeIds": [
+      "32:1931",
+      "32:4377",
+      "32:4378"
+    ],
+    "textChanges": [
+      {
+        "id": "32:3610",
+        "before": "导入结构",
+        "after": "导入"
+      },
+      {
+        "id": "32:3618",
+        "before": "导出结构",
+        "after": "导出"
+      }
+    ],
+    "screens": [
+      {
+        "id": "32:1874",
+        "width": 1440,
+        "height": 936,
+        "children": [
+          {
+            "id": "32:1875",
+            "name": "PD TMM/App Header",
+            "y": 0,
+            "height": 64
+          },
+          {
+            "id": "32:1901",
+            "name": "工作区",
+            "y": 64,
+            "height": 872
+          }
+        ]
+      },
+      {
+        "id": "32:2699",
+        "width": 1440,
+        "height": 770,
+        "children": [
+          {
+            "id": "32:2700",
+            "name": "PD TMM/App Header",
+            "y": 0,
+            "height": 64
+          },
+          {
+            "id": "32:2726",
+            "name": "工作区",
+            "y": 64,
+            "height": 706
+          }
+        ]
+      },
+      {
+        "id": "32:2830",
+        "width": 1440,
+        "height": 774,
+        "children": [
+          {
+            "id": "32:2831",
+            "name": "PD TMM/App Header",
+            "y": 0,
+            "height": 64
+          },
+          {
+            "id": "32:2857",
+            "name": "工作区",
+            "y": 64,
+            "height": 710
+          }
+        ]
+      },
+      {
+        "id": "32:3599",
+        "width": 390,
+        "height": 1779,
+        "children": [
+          {
+            "id": "32:3600",
+            "name": "标题栏",
+            "y": 0,
+            "height": 64
+          },
+          {
+            "id": "32:3609",
+            "name": "文件操作",
+            "y": 64,
+            "height": 56
+          },
+          {
+            "id": "32:3630",
+            "name": "导航",
+            "y": 120,
+            "height": 49
+          },
+          {
+            "id": "32:3637",
+            "name": "工作区",
+            "y": 169,
+            "height": 1610
+          }
+        ]
+      }
+    ],
+    "structureColumns": {
+      "left": "45:3543",
+      "leftWidth": 1040,
+      "profile": "32:2643",
+      "gap": 24
+    },
+    "preserved": "Original table rows, source component links, thickness gray scale, and user-deleted status rows."
+  },
+  "alignFix": {
+    "mutatedNodeIds": [
+      "29:1521"
+    ],
+    "bounds": {
+      "x": 80,
+      "y": 10,
+      "width": 56,
+      "height": 20
+    }
+  },
+  "validation": "All four current screen screenshots passed. Profile header alignment corrected and rechecked. Table data and thickness gray scale preserved.",
+  "pendingValidation": []
+}

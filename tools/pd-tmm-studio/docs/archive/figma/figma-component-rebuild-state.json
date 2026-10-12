@@ -1,0 +1,109 @@
+{
+  "fileKey": "gXWK7WOrtZxYjcrjaMOgVn",
+  "scope": "Rebuild existing 8 product screens and 2 reference boards with linked SDS controls and AG Grid table content; preserve data and reduced copy",
+  "phase": "complete",
+  "resultFile": "figma-component-rebuild-result.json",
+  "activePageId": "32:1184",
+  "activeFrameId": "32:1874",
+  "createdNodeIds": [
+    "26:570",
+    "26:571",
+    "26:572",
+    "26:573",
+    "26:577",
+    "26:578",
+    "26:579",
+    "26:585",
+    "26:586",
+    "26:587",
+    "26:596",
+    "26:597",
+    "26:598",
+    "26:600",
+    "26:601",
+    "26:602",
+    "26:606",
+    "26:607",
+    "26:608",
+    "26:616",
+    "26:617",
+    "26:618",
+    "26:623",
+    "26:624",
+    "26:625",
+    "26:627",
+    "26:628",
+    "26:629",
+    "26:631",
+    "26:632",
+    "26:633",
+    "26:635",
+    "26:636",
+    "26:637",
+    "26:639",
+    "26:640",
+    "26:641"
+  ],
+  "board": "26:570",
+  "anchors": {
+    "Button": "26:573",
+    "Input": "26:579",
+    "Select": "26:587",
+    "Tab": "26:598",
+    "IconButton": "26:602",
+    "RadioField": "26:608",
+    "Tag": "26:618",
+    "Up": "26:625",
+    "Down": "26:629",
+    "Trash": "26:633",
+    "More": "26:637",
+    "Data": "26:641"
+  },
+  "variables": {
+    "surface": {
+      "id": "VariableID:a4865545b526a5b3399a512667f40c9efe0c2fc4/5613:370",
+      "key": "a4865545b526a5b3399a512667f40c9efe0c2fc4"
+    },
+    "background": {
+      "id": "VariableID:34f184ba91e9ebb52258b767a603f5c2c97956a2/5613:371",
+      "key": "34f184ba91e9ebb52258b767a603f5c2c97956a2"
+    },
+    "text": {
+      "id": "VariableID:cf92d4e8c6a5a5ed82f024d47d11c21d5162ac3c/5613:387",
+      "key": "cf92d4e8c6a5a5ed82f024d47d11c21d5162ac3c"
+    },
+    "muted": {
+      "id": "VariableID:3184ed9d395b6588f571919557ce051337792211/5613:388",
+      "key": "3184ed9d395b6588f571919557ce051337792211"
+    },
+    "border": {
+      "id": "VariableID:395870afebb3397e858358930ffdd69a5ec0f73d/5613:437",
+      "key": "395870afebb3397e858358930ffdd69a5ec0f73d"
+    },
+    "selected": {
+      "id": "VariableID:5131a463005201852fe09bd47f7f2f172cd4942b/5613:334",
+      "key": "5131a463005201852fe09bd47f7f2f172cd4942b"
+    }
+  },
+  "spacing": {
+    "4": "VariableID:26:557",
+    "8": "VariableID:26:558",
+    "12": "VariableID:26:559",
+    "16": "VariableID:26:560",
+    "24": "VariableID:26:561",
+    "32": "VariableID:26:562"
+  },
+  "collection": "VariableCollectionId:26:556",
+  "styles": {
+    "Body": "S:d67afd8e9edffb9058d1956d3d6b74ae6cee86d1,",
+    "Label": "S:e831a143e136a7eff75f5040285254fa1dfb0e8a,",
+    "Title": "S:eee042ef530eff09d6f82b41f53ee2f63b1a094f,",
+    "Metric": "S:96c281befd7cba97b6ec8e1e18ec75b8e203d207,"
+  },
+  "importedStyle": "S:dd16ffab542d022b9a2d78275ed222c2cb4646b4,3017:75",
+  "missingAssets": [
+    "AG Grid Column Header outer set",
+    "AG Grid Cell outer set"
+  ],
+  "fallback": "Match source Quartz geometry; reuse published AG Grid Data and SDS controls without detaching."
+}

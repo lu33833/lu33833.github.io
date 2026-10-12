@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1080" viewBox="0 0 1440 1080" role="img" aria-labelledby="title desc"><title id="title">PD 外延光学工作台 · 成熟配色参考</title><desc id="desc">三套 Radix 官方色阶的工作台用途对照：Gray 和 Teal 推荐，Slate 和 Indigo 备选，Sand 和 Bronze 为暖色对照。每套包含准确 HEX、按钮和选中行样本。材料色单独保留。</desc><g font-family="Microsoft YaHei, Noto Sans CJK SC, Segoe UI, sans-serif">
+<rect x="0" y="0" width="1440" height="1080" rx="0" fill="#ffffff"/>
+<text x="36" y="54" fill="#1c2024" font-size="30" font-weight="600">PD 外延光学工作台 · 成熟配色参考</text>
+<text x="36" y="88" fill="#60646c" font-size="16" font-weight="400">Radix Colors 官方 sRGB 色值 · 适用于手工 Figma 设计 · 2026-10-09</text>
+<text x="36" y="116" fill="#60646c" font-size="14" font-weight="400">色值沿用官方；具体用途为本项目映射。仅比较界面颜色，材料与科学数据配色独立。</text>
+<rect x="36" y="146" width="432" height="653" rx="8" fill="#f9f9f9" stroke="#d9d9d9"/>
+<text x="56" y="184" fill="#202020" font-size="24" font-weight="600">A  Gray + Teal</text>
+<text x="56" y="213" fill="#646464" font-size="14" font-weight="400">推荐 · 中性灰底，青绿强调</text>
+<rect x="56" y="233" width="78.4" height="44" rx="0" fill="#f9f9f9"/>
+<rect x="134.4" y="233" width="78.4" height="44" rx="0" fill="#f0f0f0"/>
+<rect x="212.8" y="233" width="78.4" height="44" rx="0" fill="#d9d9d9"/>
+<rect x="291.20000000000005" y="233" width="78.4" height="44" rx="0" fill="#008573"/>
+<rect x="369.6" y="233" width="78.4" height="44" rx="0" fill="#202020"/>
+<rect x="56" y="302" width="24" height="24" rx="4" fill="#f9f9f9" stroke="#cecece"/>
+<text x="92" y="319" fill="#202020" font-size="14" font-weight="400">页面背景</text>
+<text x="208" y="319" fill="#646464" font-size="13" font-weight="400">gray2</text>
+<text x="320" y="319" fill="#202020" font-size="14" font-weight="400">#F9F9F9</text>
+<rect x="56" y="342" width="24" height="24" rx="4" fill="#ffffff" stroke="#cecece"/>
+<text x="92" y="359" fill="#202020" font-size="14" font-weight="400">面板 / 图纸</text>
+<text x="208" y="359" fill="#646464" font-size="13" font-weight="400">white</text>
+<text x="320" y="359" fill="#202020" font-size="14" font-weight="400">#FFFFFF</text>
+<rect x="56" y="382" width="24" height="24" rx="4" fill="#202020" stroke="#cecece"/>
+<text x="92" y="399" fill="#202020" font-size="14" font-weight="400">主要文字</text>
+<text x="208" y="399" fill="#646464" font-size="13" font-weight="400">gray12</text>
+<text x="320" y="399" fill="#202020" font-size="14" font-weight="400">#202020</text>
+<rect x="56" y="422" width="24" height="24" rx="4" fill="#646464" stroke="#cecece"/>
+<text x="92" y="439" fill="#202020" font-size="14" font-weight="400">次要文字</text>
+<text x="208" y="439" fill="#646464" font-size="13" font-weight="400">gray11</text>
+<text x="320" y="439" fill="#202020" font-size="14" font-weight="400">#646464</text>
+<rect x="56" y="462" width="24" height="24" rx="4" fill="#d9d9d9" stroke="#cecece"/>
+<text x="92" y="479" fill="#202020" font-size="14" font-weight="400">普通分隔线</text>
+<text x="208" y="479" fill="#646464" font-size="13" font-weight="400">gray6</text>
+<text x="320" y="479" fill="#202020" font-size="14" font-weight="400">#D9D9D9</text>
+<rect x="56" y="502" width="24" height="24" rx="4" fill="#008573" stroke="#cecece"/>
+<text x="92" y="519" fill="#202020" font-size="14" font-weight="400">主要按钮</text>
+<text x="208" y="519" fill="#646464" font-size="13" font-weight="400">teal11</text>
+<text x="320" y="519" fill="#202020" font-size="14" font-weight="400">#008573</text>
+<rect x="56" y="542" width="24" height="24" rx="4" fill="#e0f8f3" stroke="#cecece"/>
+<text x="92" y="559" fill="#202020" font-size="14" font-weight="400">选中填充</text>
+<text x="208" y="559" fill="#646464" font-size="13" font-weight="400">teal3</text>
+<text x="320" y="559" fill="#202020" font-size="14" font-weight="400">#E0F8F3</text>
+<rect x="56" y="610" width="144" height="38" rx="6" fill="#008573"/>
+<text x="94" y="635" fill="#ffffff" font-size="14" font-weight="500">运行仿真</text>
+<rect x="210" y="610" width="144" height="38" rx="6" fill="#0d3d38"/>
+<text x="248" y="635" fill="#ffffff" font-size="14" font-weight="500">悬停状态</text>
+<text x="56" y="677" fill="#646464" font-size="14" font-weight="400">白字 / 按钮  4.56:1</text>
+<rect x="56" y="698" width="392" height="42" rx="4" fill="#e0f8f3"/>
+<text x="68" y="725" fill="#0d3d38" font-size="14" font-weight="500">●  InGaAs absorber</text>
+<text x="345" y="725" fill="#202020" font-size="14" font-weight="400">750 nm</text>
+<text x="56" y="771" fill="#646464" font-size="13" font-weight="400">选中项文字  teal12 · 10.85:1</text>
+<rect x="504" y="146" width="432" height="653" rx="8" fill="#f9f9fb" stroke="#d9d9e0"/>
+<text x="524" y="184" fill="#1c2024" font-size="24" font-weight="600">B  Slate + Indigo</text>
+<text x="524" y="213" fill="#60646c" font-size="14" font-weight="400">备选 · 冷色仪器工作台</text>
+<rect x="524" y="233" width="78.4" height="44" rx="0" fill="#f9f9fb"/>
+<rect x="602.4" y="233" width="78.4" height="44" rx="0" fill="#f0f0f3"/>
+<rect x="680.8" y="233" width="78.4" height="44" rx="0" fill="#d9d9e0"/>
+<rect x="759.2" y="233" width="78.4" height="44" rx="0" fill="#3e63dd"/>
+<rect x="837.6" y="233" width="78.4" height="44" rx="0" fill="#1c2024"/>
+<rect x="524" y="302" width="24" height="24" rx="4" fill="#f9f9fb" stroke="#cdced6"/>
+<text x="560" y="319" fill="#1c2024" font-size="14" font-weight="400">页面背景</text>
+<text x="676" y="319" fill="#60646c" font-size="13" font-weight="400">slate2</text>
+<text x="788" y="319" fill="#1c2024" font-size="14" font-weight="400">#F9F9FB</text>
+<rect x="524" y="342" width="24" height="24" rx="4" fill="#ffffff" stroke="#cdced6"/>
+<text x="560" y="359" fill="#1c2024" font-size="14" font-weight="400">面板 / 图纸</text>
+<text x="676" y="359" fill="#60646c" font-size="13" font-weight="400">white</text>
+<text x="788" y="359" fill="#1c2024" font-size="14" font-weight="400">#FFFFFF</text>
+<rect x="524" y="382" width="24" height="24" rx="4" fill="#1c2024" stroke="#cdced6"/>
+<text x="560" y="399" fill="#1c2024" font-size="14" font-weight="400">主要文字</text>
+<text x="676" y="399" fill="#60646c" font-size="13" font-weight="400">slate12</text>
+<text x="788" y="399" fill="#1c2024" font-size="14" font-weight="400">#1C2024</text>
+<rect x="524" y="422" width="24" height="24" rx="4" fill="#60646c" stroke="#cdced6"/>
+<text x="560" y="439" fill="#1c2024" font-size="14" font-weight="400">次要文字</text>
+<text x="676" y="439" fill="#60646c" font-size="13" font-weight="400">slate11</text>
+<text x="788" y="439" fill="#1c2024" font-size="14" font-weight="400">#60646C</text>
+<rect x="524" y="462" width="24" height="24" rx="4" fill="#d9d9e0" stroke="#cdced6"/>
+<text x="560" y="479" fill="#1c2024" font-size="14" font-weight="400">普通分隔线</text>
+<text x="676" y="479" fill="#60646c" font-size="13" font-weight="400">slate6</text>
+<text x="788" y="479" fill="#1c2024" font-size="14" font-weight="400">#D9D9E0</text>
+<rect x="524" y="502" width="24" height="24" rx="4" fill="#3e63dd" stroke="#cdced6"/>
+<text x="560" y="519" fill="#1c2024" font-size="14" font-weight="400">主要按钮</text>
+<text x="676" y="519" fill="#60646c" font-size="13" font-weight="400">indigo9</text>
+<text x="788" y="519" fill="#1c2024" font-size="14" font-weight="400">#3E63DD</text>
+<rect x="524" y="542" width="24" height="24" rx="4" fill="#edf2fe" stroke="#cdced6"/>
+<text x="560" y="559" fill="#1c2024" font-size="14" font-weight="400">选中填充</text>
+<text x="676" y="559" fill="#60646c" font-size="13" font-weight="400">indigo3</text>
+<text x="788" y="559" fill="#1c2024" font-size="14" font-weight="400">#EDF2FE</text>
+<rect x="524" y="610" width="144" height="38" rx="6" fill="#3e63dd"/>
+<text x="562" y="635" fill="#ffffff" font-size="14" font-weight="500">运行仿真</text>
+<rect x="678" y="610" width="144" height="38" rx="6" fill="#3358d4"/>
+<text x="716" y="635" fill="#ffffff" font-size="14" font-weight="500">悬停状态</text>
+<text x="524" y="677" fill="#60646c" font-size="14" font-weight="400">白字 / 按钮  5.21:1</text>
+<rect x="524" y="698" width="392" height="42" rx="4" fill="#edf2fe"/>
+<text x="536" y="725" fill="#3a5bc7" font-size="14" font-weight="500">●  InGaAs absorber</text>
+<text x="813" y="725" fill="#1c2024" font-size="14" font-weight="400">750 nm</text>
+<text x="524" y="771" fill="#60646c" font-size="13" font-weight="400">选中项文字  indigo11 · 5.35:1</text>
+<rect x="972" y="146" width="432" height="653" rx="8" fill="#f9f9f8" stroke="#dad9d6"/>
+<text x="992" y="184" fill="#21201c" font-size="24" font-weight="600">C  Sand + Bronze</text>
+<text x="992" y="213" fill="#63635e" font-size="14" font-weight="400">暖色对照 · 与材料橙金较接近</text>
+<rect x="992" y="233" width="78.4" height="44" rx="0" fill="#f9f9f8"/>
+<rect x="1070.4" y="233" width="78.4" height="44" rx="0" fill="#f1f0ef"/>
+<rect x="1148.8" y="233" width="78.4" height="44" rx="0" fill="#dad9d6"/>
+<rect x="1227.2" y="233" width="78.4" height="44" rx="0" fill="#7d5e54"/>
+<rect x="1305.6" y="233" width="78.4" height="44" rx="0" fill="#21201c"/>
+<rect x="992" y="302" width="24" height="24" rx="4" fill="#f9f9f8" stroke="#cfceca"/>
+<text x="1028" y="319" fill="#21201c" font-size="14" font-weight="400">页面背景</text>
+<text x="1144" y="319" fill="#63635e" font-size="13" font-weight="400">sand2</text>
+<text x="1256" y="319" fill="#21201c" font-size="14" font-weight="400">#F9F9F8</text>
+<rect x="992" y="342" width="24" height="24" rx="4" fill="#ffffff" stroke="#cfceca"/>
+<text x="1028" y="359" fill="#21201c" font-size="14" font-weight="400">面板 / 图纸</text>
+<text x="1144" y="359" fill="#63635e" font-size="13" font-weight="400">white</text>
+<text x="1256" y="359" fill="#21201c" font-size="14" font-weight="400">#FFFFFF</text>
+<rect x="992" y="382" width="24" height="24" rx="4" fill="#21201c" stroke="#cfceca"/>
+<text x="1028" y="399" fill="#21201c" font-size="14" font-weight="400">主要文字</text>
+<text x="1144" y="399" fill="#63635e" font-size="13" font-weight="400">sand12</text>
+<text x="1256" y="399" fill="#21201c" font-size="14" font-weight="400">#21201C</text>
+<rect x="992" y="422" width="24" height="24" rx="4" fill="#63635e" stroke="#cfceca"/>
+<text x="1028" y="439" fill="#21201c" font-size="14" font-weight="400">次要文字</text>
+<text x="1144" y="439" fill="#63635e" font-size="13" font-weight="400">sand11</text>
+<text x="1256" y="439" fill="#21201c" font-size="14" font-weight="400">#63635E</text>
+<rect x="992" y="462" width="24" height="24" rx="4" fill="#dad9d6" stroke="#cfceca"/>
+<text x="1028" y="479" fill="#21201c" font-size="14" font-weight="400">普通分隔线</text>
+<text x="1144" y="479" fill="#63635e" font-size="13" font-weight="400">sand6</text>
+<text x="1256" y="479" fill="#21201c" font-size="14" font-weight="400">#DAD9D6</text>
+<rect x="992" y="502" width="24" height="24" rx="4" fill="#7d5e54" stroke="#cfceca"/>
+<text x="1028" y="519" fill="#21201c" font-size="14" font-weight="400">主要按钮</text>
+<text x="1144" y="519" fill="#63635e" font-size="13" font-weight="400">bronze11</text>
+<text x="1256" y="519" fill="#21201c" font-size="14" font-weight="400">#7D5E54</text>
+<rect x="992" y="542" width="24" height="24" rx="4" fill="#f6edea" stroke="#cfceca"/>
+<text x="1028" y="559" fill="#21201c" font-size="14" font-weight="400">选中填充</text>
+<text x="1144" y="559" fill="#63635e" font-size="13" font-weight="400">bronze3</text>
+<text x="1256" y="559" fill="#21201c" font-size="14" font-weight="400">#F6EDEA</text>
+<rect x="992" y="610" width="144" height="38" rx="6" fill="#7d5e54"/>
+<text x="1030" y="635" fill="#ffffff" font-size="14" font-weight="500">运行仿真</text>
+<rect x="1146" y="610" width="144" height="38" rx="6" fill="#43302b"/>
+<text x="1184" y="635" fill="#ffffff" font-size="14" font-weight="500">悬停状态</text>
+<text x="992" y="677" fill="#63635e" font-size="14" font-weight="400">白字 / 按钮  5.83:1</text>
+<rect x="992" y="698" width="392" height="42" rx="4" fill="#f6edea"/>
+<text x="1004" y="725" fill="#43302b" font-size="14" font-weight="500">●  InGaAs absorber</text>
+<text x="1281" y="725" fill="#21201c" font-size="14" font-weight="400">750 nm</text>
+<text x="992" y="771" fill="#63635e" font-size="13" font-weight="400">选中项文字  bronze12 · 10.74:1</text>
+<text x="36" y="837" fill="#1c2024" font-size="20" font-weight="600">材料色保持现有识别方式</text>
+<rect x="36" y="861" width="54" height="40" rx="4" fill="#d5aa39"/>
+<text x="102" y="878" fill="#1c2024" font-size="15" font-weight="400">Au</text>
+<text x="102" y="900" fill="#60646c" font-size="13" font-weight="400">#D5AA39</text>
+<rect x="314" y="861" width="54" height="40" rx="4" fill="#777b80"/>
+<text x="380" y="878" fill="#1c2024" font-size="15" font-weight="400">Ti</text>
+<text x="380" y="900" fill="#60646c" font-size="13" font-weight="400">#777B80</text>
+<rect x="592" y="861" width="54" height="40" rx="4" fill="#50837a"/>
+<text x="658" y="878" fill="#1c2024" font-size="15" font-weight="400">InP</text>
+<text x="658" y="900" fill="#60646c" font-size="13" font-weight="400">#50837A</text>
+<rect x="870" y="861" width="54" height="40" rx="4" fill="#df744c"/>
+<text x="936" y="878" fill="#1c2024" font-size="15" font-weight="400">InGaAs</text>
+<text x="936" y="900" fill="#60646c" font-size="13" font-weight="400">#DF744C</text>
+<rect x="1148" y="861" width="54" height="40" rx="4" fill="#b99b51"/>
+<text x="1214" y="878" fill="#1c2024" font-size="15" font-weight="400">InGaAsP</text>
+<text x="1214" y="900" fill="#60646c" font-size="13" font-weight="400">#B99B51</text>
+<text x="36" y="946" fill="#1c2024" font-size="18" font-weight="600">使用要点</text>
+<text x="36" y="974" fill="#60646c" font-size="15" font-weight="400">Teal 9 / Bronze 9 + 白色小字不足 4.5:1；这里分别使用 Teal 11 / Bronze 11。</text>
+<text x="36" y="1002" fill="#60646c" font-size="15" font-weight="400">材料色不随主题切换；光谱保留蓝 / 橙区分；连续热图单独采用科学色带。</text>
+<text x="36" y="1043" fill="#60646c" font-size="13" font-weight="400">来源：radix-ui.com/colors · github.com/radix-ui/colors/src/light.ts     完整映射见 color-research.md</text>
+</g></svg>

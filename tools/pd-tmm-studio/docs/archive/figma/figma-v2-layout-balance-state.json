@@ -1,0 +1,107 @@
+{
+  "fileKey": "gXWK7WOrtZxYjcrjaMOgVn",
+  "pageId": "32:1184",
+  "updatedAt": "2026-10-10",
+  "phase": "complete",
+  "purpose": "Balance v2 column heights and eliminate unused space below the desktop structure profile.",
+  "sourceComponent": {
+    "id": "29:1569",
+    "baseSize": {
+      "width": 312,
+      "height": 654
+    },
+    "minHeight": 654,
+    "listId": "29:1522",
+    "listVerticalSizing": "FILL",
+    "rowVerticalSizing": "FILL",
+    "rowMinHeight": 32,
+    "mutatedNodeIds": [
+      "29:1569",
+      "29:1522",
+      "29:1523",
+      "29:1526",
+      "29:1529",
+      "29:1532",
+      "29:1535",
+      "29:1538",
+      "29:1541",
+      "29:1544",
+      "29:1547",
+      "29:1550",
+      "29:1553",
+      "29:1556",
+      "29:1559",
+      "29:1562",
+      "29:1565"
+    ]
+  },
+  "screens": [
+    {
+      "id": "32:1874",
+      "w": 1440,
+      "h": 936
+    },
+    {
+      "id": "32:2699",
+      "w": 1440,
+      "h": 770
+    },
+    {
+      "id": "32:2830",
+      "w": 1440,
+      "h": 774
+    },
+    {
+      "id": "32:3599",
+      "w": 390,
+      "h": 1779
+    }
+  ],
+  "mutatedInstanceAndPanelIds": [
+    "32:2643",
+    "32:4379",
+    "32:2944"
+  ],
+  "desktopProfile": {
+    "id": "32:2643",
+    "width": 312,
+    "height": 824,
+    "verticalSizing": "FILL",
+    "listHeight": 706,
+    "rowHeight": 43.333333,
+    "adjacentColumnHeight": 824,
+    "previousBottomVoid": 170
+  },
+  "mobileProfile": {
+    "id": "32:4379",
+    "width": 358,
+    "height": 654,
+    "rowHeight": 32
+  },
+  "scan": {
+    "left": 606,
+    "right": 606,
+    "gap": 28,
+    "chartY": 93
+  },
+  "validation": {
+    "screenshotsInspected": [
+      "32:1874",
+      "32:2830",
+      "32:2699",
+      "32:4379"
+    ],
+    "passed": true,
+    "layerCount": 15,
+    "thicknessGrayscalePreserved": true,
+    "componentInstancesPreserved": true,
+    "textCentered": true,
+    "desktopBottomEdgesAligned": true,
+    "mobileCompactLayoutPreserved": true
+  },
+  "notes": [
+    "Layer rows expand uniformly within the desktop profile; thickness remains encoded by gray intensity.",
+    "The scan result panel now matches the 606 px parameter panel; the chart retains its original dimensions.",
+    "Existing content and prior manual deletions were preserved."
+  ]
+}

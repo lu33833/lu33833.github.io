@@ -1,0 +1,258 @@
+{
+  "fileKey": "VnVWWBCN1UYaG9sWmAkQOA",
+  "date": "2026-10-09",
+  "scope": "Replace green-tinted Sage neutrals with official Radix Gray, preserve Teal accents and existing variable IDs",
+  "mutatedVariableIds": [
+    "VariableID:6:5",
+    "VariableID:6:6",
+    "VariableID:6:7",
+    "VariableID:6:8",
+    "VariableID:6:9",
+    "VariableID:6:10",
+    "VariableID:6:11",
+    "VariableID:6:12",
+    "VariableID:6:13",
+    "VariableID:6:14",
+    "VariableID:6:15",
+    "VariableID:6:16",
+    "VariableID:6:81",
+    "VariableID:6:82",
+    "VariableID:6:83",
+    "VariableID:6:84",
+    "VariableID:6:85",
+    "VariableID:6:86",
+    "VariableID:6:87",
+    "VariableID:6:88",
+    "VariableID:6:89",
+    "VariableID:6:90",
+    "VariableID:6:91",
+    "VariableID:6:92",
+    "VariableID:6:93",
+    "VariableID:6:94",
+    "VariableID:6:95",
+    "VariableID:6:96",
+    "VariableID:6:97"
+  ],
+  "mutatedNodeIds": [
+    "7:8",
+    "7:9",
+    "7:10",
+    "7:21",
+    "7:22",
+    "7:31",
+    "7:32",
+    "7:36",
+    "7:37",
+    "7:41",
+    "7:42",
+    "7:181",
+    "7:189",
+    "7:193",
+    "7:197",
+    "7:201",
+    "7:206",
+    "7:210"
+  ],
+  "changed": [
+    {
+      "id": "VariableID:6:5",
+      "name": "Gray/1",
+      "before": "#FBFDFC",
+      "after": "#FCFCFC"
+    },
+    {
+      "id": "VariableID:6:6",
+      "name": "Gray/2",
+      "before": "#F7F9F8",
+      "after": "#F9F9F9"
+    },
+    {
+      "id": "VariableID:6:7",
+      "name": "Gray/3",
+      "before": "#EEF1F0",
+      "after": "#F0F0F0"
+    },
+    {
+      "id": "VariableID:6:8",
+      "name": "Gray/4",
+      "before": "#E6E9E8",
+      "after": "#E8E8E8"
+    },
+    {
+      "id": "VariableID:6:9",
+      "name": "Gray/5",
+      "before": "#DFE2E0",
+      "after": "#E0E0E0"
+    },
+    {
+      "id": "VariableID:6:10",
+      "name": "Gray/6",
+      "before": "#D7DAD9",
+      "after": "#D9D9D9"
+    },
+    {
+      "id": "VariableID:6:11",
+      "name": "Gray/7",
+      "before": "#CBCFCD",
+      "after": "#CECECE"
+    },
+    {
+      "id": "VariableID:6:12",
+      "name": "Gray/8",
+      "before": "#B8BCBA",
+      "after": "#BBBBBB"
+    },
+    {
+      "id": "VariableID:6:13",
+      "name": "Gray/9",
+      "before": "#868E8B",
+      "after": "#8D8D8D"
+    },
+    {
+      "id": "VariableID:6:14",
+      "name": "Gray/10",
+      "before": "#7C8481",
+      "after": "#838383"
+    },
+    {
+      "id": "VariableID:6:15",
+      "name": "Gray/11",
+      "before": "#5F6563",
+      "after": "#646464"
+    },
+    {
+      "id": "VariableID:6:16",
+      "name": "Gray/12",
+      "before": "#1A211E",
+      "after": "#202020"
+    }
+  ],
+  "semantics": [
+    {
+      "id": "VariableID:6:81",
+      "name": "Canvas/Default",
+      "hex": "#F9F9F9",
+      "alias": "VariableID:6:6"
+    },
+    {
+      "id": "VariableID:6:82",
+      "name": "Surface/Default",
+      "hex": "#FFFFFF",
+      "alias": "VariableID:6:80"
+    },
+    {
+      "id": "VariableID:6:83",
+      "name": "Surface/Subtle",
+      "hex": "#F0F0F0",
+      "alias": "VariableID:6:7"
+    },
+    {
+      "id": "VariableID:6:84",
+      "name": "Surface/Hover",
+      "hex": "#E8E8E8",
+      "alias": "VariableID:6:8"
+    },
+    {
+      "id": "VariableID:6:85",
+      "name": "Text/Primary",
+      "hex": "#202020",
+      "alias": "VariableID:6:16"
+    },
+    {
+      "id": "VariableID:6:86",
+      "name": "Text/Secondary",
+      "hex": "#646464",
+      "alias": "VariableID:6:15"
+    },
+    {
+      "id": "VariableID:6:87",
+      "name": "Border/Subtle",
+      "hex": "#D9D9D9",
+      "alias": "VariableID:6:10"
+    },
+    {
+      "id": "VariableID:6:88",
+      "name": "Border/Control",
+      "hex": "#8D8D8D",
+      "alias": "VariableID:6:13"
+    },
+    {
+      "id": "VariableID:6:89",
+      "name": "Action/Primary",
+      "hex": "#008573",
+      "alias": "VariableID:6:27"
+    },
+    {
+      "id": "VariableID:6:90",
+      "name": "Action/Hover",
+      "hex": "#0D3D38",
+      "alias": "VariableID:6:28"
+    },
+    {
+      "id": "VariableID:6:91",
+      "name": "Text/OnAction",
+      "hex": "#FFFFFF",
+      "alias": "VariableID:6:80"
+    },
+    {
+      "id": "VariableID:6:92",
+      "name": "Action/SelectedBg",
+      "hex": "#E0F8F3",
+      "alias": "VariableID:6:19"
+    },
+    {
+      "id": "VariableID:6:93",
+      "name": "Text/Selected",
+      "hex": "#0D3D38",
+      "alias": "VariableID:6:28"
+    },
+    {
+      "id": "VariableID:6:94",
+      "name": "Focus/Ring",
+      "hex": "#008573",
+      "alias": "VariableID:6:27"
+    },
+    {
+      "id": "VariableID:6:95",
+      "name": "Status/ErrorText",
+      "hex": "#CE2C31",
+      "alias": "VariableID:6:77"
+    },
+    {
+      "id": "VariableID:6:96",
+      "name": "Status/WarningText",
+      "hex": "#4F3422",
+      "alias": "VariableID:6:79"
+    },
+    {
+      "id": "VariableID:6:97",
+      "name": "Status/WarningBg",
+      "hex": "#FFF7C2",
+      "alias": "VariableID:6:78"
+    }
+  ],
+  "validation": {
+    "grayCount": 12,
+    "neutralRGB": true,
+    "aliasesPreserved": true,
+    "accentAndScientificValuesPreserved": true,
+    "scopesValid": true,
+    "codeSyntaxValid": true,
+    "staleBoardText": 0,
+    "dependentNodeCount": 115
+  },
+  "board": {
+    "id": "7:2",
+    "name": "PD · 配色参考（Radix）",
+    "bounds": {
+      "x": 640,
+      "y": -1516,
+      "width": 1440,
+      "height": 1357
+    }
+  },
+  "visualValidation": {
+    "figmaBoard": "passed",
+    "localBoard": "passed"
+  }
+}
