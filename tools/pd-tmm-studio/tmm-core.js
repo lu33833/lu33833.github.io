@@ -1,13 +1,13 @@
 // ../pd-tmm-studio/lib/tmm.ts
 var MATERIALS = {
-  InP: { n: 3.22, k: 0, color: "#50837a" },
-  InGaAs: { n: 3.65, k: 0.12, color: "#df744c" },
+  InP: { n: 3.202006, k: 0, color: "#50837a" },
+  InGaAs: { n: 3.509969, k: 0.106447, color: "#df744c" },
   "InGaAsP Q1.03": { n: 3.3006, k: 0, color: "#b99b51" },
   "InGaAsP Q1.2": { n: 3.4194, k: 1224e-6, color: "#c9aa5e" },
   "InGaAsP Q1.4": { n: 3.5392, k: 0.099118, color: "#d1b46d" },
-  Ti: { n: 3.72, k: 3.58, color: "#777b80" },
-  Pt: { n: 4.436, k: 6.784, color: "#9aa0a8" },
-  Au: { n: 0.419, k: 8.42, color: "#d5aa39" },
+  Ti: { n: 3.646554, k: 4.266836, color: "#777b80" },
+  Pt: { n: 4.435989, k: 6.784011, color: "#9aa0a8" },
+  Au: { n: 0.392486, k: 8.874695, color: "#d5aa39" },
   Air: { n: 1, k: 0, color: "#dbe8e5" },
   "SiO\u2082": { n: 1.45, k: 0, color: "#a9d5ce" },
   SiN: { n: 2.02, k: 0, color: "#679eaf" },
@@ -15,7 +15,7 @@ var MATERIALS = {
   Custom: { n: 2, k: 0, color: "#8a8f98" }
 };
 var DEFAULT_SETTINGS = {
-  incidentN: 3.22,
+  incidentN: 3.202006,
   incidentK: 0,
   exitN: 1,
   exitK: 0,
@@ -27,26 +27,26 @@ var DEFAULT_SETTINGS = {
   angularSamples: 18,
   gaussian: true,
   wavelengthDependent: false,
-  conservativeInGaAs: false,
+  inGaAsKScale: 1,
   idealAr: false,
   collectionEfficiency: 1
 };
 var DEFAULT_LAYERS = [
-  { id: "uid", name: "InP UID", material: "InP", thickness: 100, n: 3.22, k: 0, target: false, color: "#50837a" },
-  { id: "p-bottom", name: "InP p+ bottom", material: "InP", thickness: 500, n: 3.22, k: 0, target: false, color: "#5d9287" },
-  { id: "p-contact", name: "InGaAs p+ contact", material: "InGaAs", thickness: 100, n: 3.65, k: 0.12, target: false, color: "#c76948" },
-  { id: "spacer-x", name: "InP p+ spacer X", material: "InP", thickness: 64.5, n: 3.22, k: 0, target: false, color: "#79aa9d" },
+  { id: "uid", name: "InP UID", material: "InP", thickness: 100, n: 3.202006, k: 0, target: false, color: "#50837a" },
+  { id: "p-bottom", name: "InP p+ bottom", material: "InP", thickness: 500, n: 3.202006, k: 0, target: false, color: "#5d9287" },
+  { id: "p-contact", name: "InGaAs p+ contact", material: "InGaAs", thickness: 100, n: 3.509969, k: 0.106447, target: false, color: "#c76948" },
+  { id: "spacer-x", name: "InP p+ spacer X", material: "InP", thickness: 64.5, n: 3.202006, k: 0, target: false, color: "#79aa9d" },
   { id: "q103-a", name: "Q1.03 lower", material: "InGaAsP Q1.03", thickness: 10, n: 3.3006, k: 0, target: false, color: "#b99b51" },
   { id: "q14-a", name: "Q1.4 lower", material: "InGaAsP Q1.4", thickness: 10, n: 3.5392, k: 0.099118, target: false, color: "#d1b46d" },
-  { id: "absorber", name: "InGaAs absorber", material: "InGaAs", thickness: 750, n: 3.65, k: 0.12, target: true, color: "#e67c52" },
+  { id: "absorber", name: "InGaAs absorber", material: "InGaAs", thickness: 750, n: 3.509969, k: 0.106447, target: true, color: "#e67c52" },
   { id: "q14-b", name: "Q1.4 upper", material: "InGaAsP Q1.4", thickness: 10, n: 3.5392, k: 0.099118, target: false, color: "#d1b46d" },
   { id: "q12", name: "Q1.2 upper", material: "InGaAsP Q1.2", thickness: 10, n: 3.4194, k: 1224e-6, target: false, color: "#c9aa5e" },
   { id: "q103-b", name: "Q1.03 upper", material: "InGaAsP Q1.03", thickness: 10, n: 3.3006, k: 0, target: false, color: "#b99b51" },
-  { id: "n-plus", name: "InP n+", material: "InP", thickness: 20, n: 3.22, k: 0, target: false, color: "#47786f" },
-  { id: "n-minus", name: "InP n\u2212", material: "InP", thickness: 300, n: 3.22, k: 0, target: false, color: "#568a80" },
-  { id: "spacer-y", name: "InP n+ spacer Y", material: "InP", thickness: 90.5, n: 3.22, k: 0, target: false, color: "#6ba093" },
-  { id: "ti", name: "Ti adhesion", material: "Ti", thickness: 5, n: 3.72, k: 3.58, target: false, color: "#777b80" },
-  { id: "au", name: "Au mirror", material: "Au", thickness: 100, n: 0.419, k: 8.42, target: false, color: "#d5aa39" }
+  { id: "n-plus", name: "InP n+", material: "InP", thickness: 20, n: 3.202006, k: 0, target: false, color: "#47786f" },
+  { id: "n-minus", name: "InP n\u2212", material: "InP", thickness: 300, n: 3.202006, k: 0, target: false, color: "#568a80" },
+  { id: "spacer-y", name: "InP n+ spacer Y", material: "InP", thickness: 90.5, n: 3.202006, k: 0, target: false, color: "#6ba093" },
+  { id: "ti", name: "Ti adhesion", material: "Ti", thickness: 5, n: 3.646554, k: 4.266836, target: false, color: "#777b80" },
+  { id: "au", name: "Au mirror", material: "Au", thickness: 100, n: 0.392486, k: 8.874695, target: false, color: "#d5aa39" }
 ];
 var C = (re, im = 0) => ({ re, im });
 var add = (a, b) => C(a.re + b.re, a.im + b.im);
@@ -112,36 +112,28 @@ function inGaAsAdachiIndex(wavelengthNm) {
   ));
 }
 
-const INGAAS_O_BAND_TABLE = [
-  [1260, 3.667, 0.1221],
-  [1270, 3.663, 0.1217],
-  [1280, 3.660, 0.1214],
-  [1290, 3.657, 0.1210],
-  [1300, 3.653, 0.1205],
-  [1310, 3.650, 0.1200],
-  [1320, 3.647, 0.1194],
-  [1330, 3.643, 0.1189],
-  [1340, 3.640, 0.1182],
-  [1350, 3.637, 0.1175],
-  [1360, 3.633, 0.1167]
-];
+// Literature optical constants for deposited/bulk metals.
+// Au: Johnson & Christy, Phys. Rev. B 6, 4370 (1972).
+// Ti: Johnson & Christy, Phys. Rev. B 9, 5056 (1974).
+// Pt: Rakic et al., Appl. Opt. 37, 5271 (1998), Lorentz-Drude fit.
+const METAL_NK_TABLES = {
+  Au: [[1088, .27, 7.15], [1216, .35, 8.145], [1393, .43, 9.519], [1610, .56, 11.21]],
+  Ti: [[1088, 3.50, 4.02], [1216, 3.62, 4.15], [1393, 3.67, 4.37], [1610, 3.69, 4.70]],
+  Pt: [[1201.6, 4.0459, 6.4506], [1259.4, 4.2462, 6.6385], [1309.7, 4.4348, 6.7833], [1362.0, 4.6421, 6.9073], [1410.9, 4.8401, 6.9927]]
+};
 
-function inGaAsOBandIndex(wavelengthNm) {
-  const first = INGAAS_O_BAND_TABLE[0];
-  const last = INGAAS_O_BAND_TABLE[INGAAS_O_BAND_TABLE.length - 1];
-  const wavelength = clamp(wavelengthNm, first[0], last[0]);
-  for (let index = 1; index < INGAAS_O_BAND_TABLE.length; index += 1) {
-    const upper = INGAAS_O_BAND_TABLE[index];
-    if (wavelength <= upper[0]) {
-      const lower = INGAAS_O_BAND_TABLE[index - 1];
-      const fraction = (wavelength - lower[0]) / (upper[0] - lower[0]);
-      return C(
-        lower[1] + (upper[1] - lower[1]) * fraction,
-        lower[2] + (upper[2] - lower[2]) * fraction
-      );
+function interpolateNk(table, wavelengthNm) {
+  if (wavelengthNm <= table[0][0]) return C(table[0][1], table[0][2]);
+  if (wavelengthNm >= table.at(-1)[0]) return C(table.at(-1)[1], table.at(-1)[2]);
+  for (let index = 1; index < table.length; index += 1) {
+    const upper = table[index];
+    if (wavelengthNm <= upper[0]) {
+      const lower = table[index - 1];
+      const fraction = (wavelengthNm - lower[0]) / (upper[0] - lower[0]);
+      return C(lower[1] + (upper[1] - lower[1]) * fraction, lower[2] + (upper[2] - lower[2]) * fraction);
     }
   }
-  return C(last[1], last[2]);
+  return C(table.at(-1)[1], table.at(-1)[2]);
 }
 
 // Pettit & Turner, J. Appl. Phys. 36, 2081 (1965); wavelength is in micrometres.
@@ -153,12 +145,26 @@ function inPIndex(wavelengthNm) {
   return C(Math.sqrt(Math.max(0, n2)), 0);
 }
 
+// Salzberg & Villa, JOSA 47, 244 (1957); wavelength is in micrometres.
+function siIndex(wavelengthNm) {
+  const wavelength = wavelengthNm / 1e3;
+  const wavelength2 = wavelength * wavelength;
+  const n2 = 1 + 10.6684293 * wavelength2 / (wavelength2 - 0.301516485 ** 2) +
+    0.0030434748 * wavelength2 / (wavelength2 - 1.13475115 ** 2) +
+    1.54133408 * wavelength2 / (wavelength2 - 1104 ** 2);
+  return C(Math.sqrt(Math.max(0, n2)), 0);
+}
+
 function opticalIndexForLayer(layer, settings, wavelength) {
   if (!settings.wavelengthDependent) return C(layer.n, layer.k);
   if (layer.material === "InP") return inPIndex(wavelength);
-  if (layer.material === "InGaAs" && layer.target) {
-    return settings.conservativeInGaAs ? inGaAsAdachiIndex(wavelength) : inGaAsOBandIndex(wavelength);
+  if (layer.material === "InGaAs") {
+    const articleIndex = inGaAsAdachiIndex(wavelength);
+    const kScale = Math.max(0, Number.isFinite(settings.inGaAsKScale) ? settings.inGaAsKScale : 1);
+    return C(articleIndex.re, articleIndex.im * kScale);
   }
+  if (METAL_NK_TABLES[layer.material]) return interpolateNk(METAL_NK_TABLES[layer.material], wavelength);
+  if (layer.material === "Si") return siIndex(wavelength);
   return C(layer.n, layer.k);
 }
 

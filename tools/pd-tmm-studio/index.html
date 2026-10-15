@@ -11,7 +11,7 @@
   <meta property="og:url" content="https://lu33833.github.io/tools/pd-tmm-studio/">
   <meta property="og:image" content="https://lu33833.github.io/assets/pd-tmm-card.jpg">
   <title>PD TMM 外延响应工作台</title>
-  <link rel="stylesheet" href="style.css?v=20260922-1">
+  <link rel="stylesheet" href="style.css?v=20261015-1">
 </head>
 <body>
   <div class="grid-bg" aria-hidden="true"></div>
@@ -57,12 +57,15 @@
           <label class="field"><span>目标波长</span><div><input id="targetWl" type="number" value="1310" step="1"><i>nm</i></div></label>
         </div></div>
         <div class="setting-group"><h3>材料色散 <span>DISPERSION</span></h3>
-          <label class="switch-row dispersion-switch"><span><b>使用波长依赖 n(λ), k(λ)</b><small>InGaAs 响应层 + InP 层与默认 InP 入射边界</small></span><input id="wavelengthDependent" type="checkbox"><i></i></label>
-          <label class="switch-row conservative-switch"><span><b>保守估计（低 k）</b><small>开启后切换到原 Adachi 模型；仅在波长相关模式生效</small></span><input id="conservativeInGaAs" type="checkbox"><i></i></label>
-          <div class="model-source"><span>O-BAND · 1310 CALIBRATED</span><b>InGaAs 默认 · 1260–1360 nm 校准表</b><b>InGaAs 保守 · Adachi complex dielectric model</b><b>InP · Pettit–Turner Sellmeier model</b><small>表格范围内线性插值，范围外锁定端点；仅作用于被指定为响应层的 InGaAs。</small><a href="https://doi.org/10.1063/1.343580" target="_blank" rel="noreferrer">查看保守模型文献 ↗</a><a href="https://doi.org/10.1063/1.1714410" target="_blank" rel="noreferrer">查看 InP 原始文献 ↗</a></div>
+          <label class="switch-row dispersion-switch"><span><b>使用文献波长依赖 n(λ), k(λ)</b><small>InGaAs、InP、Au、Pt、Ti、Si 与默认 InP 入射边界</small></span><input id="wavelengthDependent" type="checkbox"><i></i></label>
+          <div class="k-scale-panel">
+            <div><b>InGaAs k 倍率</b><small>仅缩放 Adachi 模型的 k(λ)，n(λ) 始终保持文献值</small></div>
+            <label class="field"><span>吸收增强系数</span><div><input id="ingaasKScale" type="number" value="1" min="0" max="5" step="0.05"><i>×</i></div></label>
+          </div>
+          <div class="model-source"><span>LITERATURE DISPERSION</span><b>InGaAs · Adachi 1989 complex dielectric model</b><b>InP · Pettit–Turner 1965 Sellmeier model</b><b>Au / Ti · Johnson–Christy 实测光学常数</b><b>Pt · Rakić 1998 Lorentz–Drude model</b><b>Si · Salzberg–Villa 1957</b><small>InGaAs 的 n 与默认 k 均直接来自文献模型；金属实测/模型数据按波长线性插值。InGaAsP 等未列材料继续使用层内固定 n + ik。</small><a href="https://doi.org/10.1063/1.343580" target="_blank" rel="noreferrer">InGaAs 文献 ↗</a><a href="https://doi.org/10.1063/1.1714410" target="_blank" rel="noreferrer">InP 文献 ↗</a><a href="https://doi.org/10.1103/PhysRevB.6.4370" target="_blank" rel="noreferrer">Au 文献 ↗</a><a href="https://doi.org/10.1103/PhysRevB.9.5056" target="_blank" rel="noreferrer">Ti 文献 ↗</a><a href="https://doi.org/10.1364/AO.37.005271" target="_blank" rel="noreferrer">Pt 文献 ↗</a><a href="https://doi.org/10.1364/JOSA.47.000244" target="_blank" rel="noreferrer">Si 文献 ↗</a></div>
         </div>
         <div class="setting-group"><h3>边界介质 <span>BOUNDARY</span></h3><div class="field-grid">
-          <label class="field"><span>入射介质 n</span><div><input id="incidentN" type="number" value="3.22" step="0.01"></div></label>
+          <label class="field"><span>入射介质 n</span><div><input id="incidentN" type="number" value="3.202006" step="0.001"></div></label>
           <label class="field"><span>入射介质 k</span><div><input id="incidentK" type="number" value="0" step="0.001"></div></label>
           <label class="field"><span>出射介质 n</span><div><input id="exitN" type="number" value="1" step="0.01"></div></label>
           <label class="field"><span>出射介质 k</span><div><input id="exitK" type="number" value="0" step="0.001"></div></label>
@@ -91,7 +94,7 @@
 
       <div class="analysis-grid">
         <section class="panel schematic-panel">
-          <div class="card-head"><div><span>LIVE CROSS-SECTION</span><h2>动态层结构剖面</h2></div><button id="downloadStructure" type="button">导出 SVG</button></div>
+          <div class="card-head"><div><span>LIVE CROSS-SECTION</span><h2>动态层结构剖面</h2></div><button id="downloadStructure" type="button">导出 PNG</button></div>
           <div class="schematic-meta"><span id="stackTotal">TOTAL —</span><span>LOG-SCALED FOR LEGIBILITY</span></div>
           <div class="schematic-scroll"><div class="schematic" id="schematic"></div></div>
           <div class="light-entry"><span></span><i>LIGHT FROM SUBSTRATE</i></div>
@@ -110,8 +113,8 @@
               <div><b>目标层吸收与响应度</b><span id="spectrumRange">1260 — 1360 nm</span></div>
               <div class="spectrum-tools">
                 <div class="legend"><i class="abs"></i>吸收率 <i class="resp"></i>响应度</div>
-                <button class="download" id="downloadSpectrumSvg" type="button">导出双轴 SVG</button>
-                <button class="download" id="downloadResponsivitySvg" type="button">仅响应度 SVG</button>
+                <button class="download" id="downloadSpectrumPng" type="button">导出双轴 PNG</button>
+                <button class="download" id="downloadResponsivityPng" type="button">仅响应度 PNG</button>
               </div>
             </div>
             <div class="canvas-wrap spectrum-wrap"><canvas id="spectrumChart"></canvas><div class="chart-tooltip" id="spectrumTooltip" role="status" aria-live="polite"></div></div>
@@ -131,7 +134,7 @@
 
           <div class="analysis-view" id="scanView">
             <section class="single-scan-panel">
-              <div class="scan-section-title"><div><b>单厚度参数扫描</b><span>THICKNESS — RESPONSIVITY</span></div><button class="download" id="downloadSingleScanSvg" type="button" disabled>导出曲线 SVG</button></div>
+              <div class="scan-section-title"><div><b>单厚度参数扫描</b><span>THICKNESS — RESPONSIVITY</span></div><button class="download" id="downloadSingleScanPng" type="button" disabled>导出曲线 PNG</button></div>
               <div class="single-scan-layout">
                 <div class="scan-controls single-scan-controls">
                   <label><span>扫描层</span><select id="singleScanLayer"></select></label>
@@ -163,6 +166,6 @@
   </main>
 
   <footer><span>OPTICAL TMM · COMPLEX N + IK · TE/TM GAUSSIAN ANGULAR SPECTRUM</span><span>R = η · A · λ / 1.24 · 不包含 RC / TRANSIT-TIME BANDWIDTH</span></footer>
-  <script type="module" src="app.js?v=20260922-1"></script>
+  <script type="module" src="app.js?v=20261015-1"></script>
 </body>
 </html>
